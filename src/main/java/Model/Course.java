@@ -13,12 +13,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
+
+
+    
 @Entity
 @Table(name = "Courses")
 public class Course {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id") // Updated column name to 'id_course'
+    @Column(name = "id")
     private int idCourse;
 
     @Column(name = "name")
@@ -28,10 +31,10 @@ public class Course {
     private String description;
 
     @Column(name = "teacher_id")
-    private int idTeacher; // Renamed to idTeacher
+    private int idTeacher; 
 
-    @Column(name = "thumbnail")
-    private String thumbnail;
+    @Column(name = "image")
+    private String image;
 
     // Correct: mappedBy points to the 'course' field in the Lecture entity
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -44,14 +47,31 @@ public class Course {
     // Constructors, Getters, and Setters remain the same...
     public Course() {}
 
-    public Course(String name, String description, int idTeacher, String thumbnail) {
+    public Course(String name, String description, int idTeacher, String image) {
         this.name = name;
         this.description = description;
         this.idTeacher = idTeacher;
-        this.thumbnail = thumbnail;
+        this.image=image;
+        this.lectures = new ArrayList<>();
+        this.assignments = new ArrayList<>();
     }
 
-    // ... other getters and setters
+    public int getIdTeacher() {
+        return idTeacher;
+    }
+
+    public void setIdTeacher(int idTeacher) {
+        this.idTeacher = idTeacher;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+   
     public int getIdCourse() {
         return idCourse;
     }
@@ -76,13 +96,6 @@ public class Course {
         this.description = description;
     }
 
-    public int getidTeacher() {
-        return idTeacher;
-    }
-
-    public void setidTeacher(int idTeacher) {
-        this.idTeacher = idTeacher;
-    }
 
     public List<Lecture> getLectures() {
         return lectures;
@@ -100,11 +113,5 @@ public class Course {
         this.assignments = assignments;
     }
 
-    public String getThumbnail() {
-        return thumbnail;
-    }
 
-    public void setThumbnail(String thumbnail) {
-        this.thumbnail = thumbnail;
-    }
 }
