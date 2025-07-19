@@ -1,5 +1,6 @@
 package model;
 
+import com.google.api.client.util.DateTime;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
@@ -18,15 +19,15 @@ public class Assignment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private int idAssignment;
+    private int idAss;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id")
-    private Course course;
+    private int idCourse;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lecture_id")
-    private Lecture lecture;
+    private int idLecture;
 
     @Column(name = "title")
     private String title;
@@ -35,7 +36,7 @@ public class Assignment {
     private String description;
 
     @Column(name = "due_date")
-    private LocalDateTime dueDate;
+    private DateTime dueDate; //chinh lai database cua em nhe DATETIME
 
     @Column(name = "status")
     private String status;
@@ -43,37 +44,37 @@ public class Assignment {
     public Assignment() {
     }
 
-    public Assignment(Course course, Lecture lecture, String title, String description, LocalDateTime dueDate, String status) {
-        this.course = course;
-        this.lecture = lecture;
+public Assignment(int idCourse, int idLecture, String title, String description, DateTime dueDate, String status) {
+        this.idCourse = idCourse;
+        this.idLecture = idLecture;
         this.title = title;
         this.description = description;
         this.dueDate = dueDate;
         this.status = status;
     }
 
-    public int getIdAssignment() {
-        return idAssignment;
+    public int getIdAss() {
+        return idAss;
     }
 
-    public void setIdAssignment(int idAssignment) {
-        this.idAssignment = idAssignment;
+    public void setIdAss(int idAss) {
+        this.idAss = idAss;
     }
 
-    public Course getCourse() {
-        return course;
+    public int getIdCourse() {
+        return idCourse;
     }
 
-    public void setCourse(Course course) {
-        this.course = course;
+    public void setIdCourse(int idCourse) {
+        this.idCourse = idCourse;
     }
 
-    public Lecture getLecture() {
-        return lecture;
+    public int getIdLecture() {
+        return idLecture;
     }
 
-    public void setLecture(Lecture lecture) {
-        this.lecture = lecture;
+    public void setIdLecture(int idLecture) {
+        this.idLecture = idLecture;
     }
 
     public String getTitle() {
@@ -92,11 +93,11 @@ public class Assignment {
         this.description = description;
     }
 
-    public LocalDateTime getDueDate() {
+    public DateTime getDueDate() {
         return dueDate;
     }
 
-    public void setDueDate(LocalDateTime dueDate) {
+    public void setDueDate(DateTime dueDate) {
         this.dueDate = dueDate;
     }
 
@@ -107,4 +108,6 @@ public class Assignment {
     public void setStatus(String status) {
         this.status = status;
     }
+
+
 }

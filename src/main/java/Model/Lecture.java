@@ -16,11 +16,11 @@ public class Lecture {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private int idLecture;
+    private int id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id")
-    private Course course;
+    private int idCourse;
 
     @Column(name = "title")
     private String title;
@@ -37,31 +37,45 @@ public class Lecture {
     public Lecture() {
     }
 
-    public Lecture(Course course, String title, String content, String videoUrl, String status) {
-        this.course = course;
+    public Lecture(int idCourse, String title, String videoUrl, String content, String status) {
+        this.idCourse = idCourse;
         this.title = title;
-        this.content = content;
         this.videoUrl = videoUrl;
+        this.content = content;
         this.status = status;
     }
 
+    public Lecture(int id, int idCourse, String title, String videoUrl, String content, String status) {
+        this.id = id;
+        this.idCourse = idCourse;
+        this.title = title;
+        this.videoUrl = videoUrl;
+        this.content = content;
+        this.status = status;
+    }
+    
+
     // --- Getters and Setters ---
 
-    public int getIdLecture() {
-        return idLecture;
+    public int getId() {
+        return id;
     }
 
-    public void setIdLecture(int idLecture) {
-        this.idLecture = idLecture;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public Course getCourse() {
-        return course;
+
+
+    public int getIdCourse() {
+        return idCourse;
     }
 
-    public void setCourse(Course course) {
-        this.course = course;
+    public void setIdCourse(int idCourse) {
+        this.idCourse = idCourse;
     }
+
+   
 
     public String getTitle() {
         return title;

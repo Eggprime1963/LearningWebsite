@@ -1,8 +1,8 @@
-<<<<<<< HEAD
+
 package Controller;
-=======
+
 package controller;
->>>>>>> 53ab6c237513d4082a5582bd813ee73d3fa9835c
+
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -13,9 +13,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-<<<<<<< HEAD
+
 import Dao.ActivityDAO;
-=======
+
 import dao.ActivityDAO;
 >>>>>>> 53ab6c237513d4082a5582bd813ee73d3fa9835c
 import dao.UserDAO;

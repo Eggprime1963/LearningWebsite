@@ -72,7 +72,7 @@ public class LectureDAO {
         }
     }
 
-    public List<Lecture> getLecturesByCourse(int courseId) {
+    public List<Lecture> getLecturesByCourseId(int courseId) {
         EntityManager em = JPAUtil.getEntityManager();
         try {
             TypedQuery<Lecture> query = em.createQuery(
