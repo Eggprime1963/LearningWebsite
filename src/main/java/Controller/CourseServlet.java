@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -125,13 +126,14 @@ public class CourseServlet extends HttpServlet {
 
         try {
             String username = (String) session.getAttribute("username");
-            User user = userDAO.findByEmailOrUsername(username);
-            if (user == null) {
+            Optional<User> userOpt = userDAO.findByEmailOrUsername(username);
+            if (userOpt == null || !userOpt.isPresent()) {
                 request.setAttribute("error", "User not found.");
                 request.getRequestDispatcher("WEB-INF/jsp/courseDetail.jsp").forward(request, response);
                 return;
             }
-            List<Course> courses = courseDAO.getCoursesByTeacherId(user.getId());
+            User user = userOpt.get();
+            List<Course> courses = courseDAO.getCoursesByTeacher(user.getId());
             request.setAttribute("user", user);
             request.setAttribute("courses", courses);
             request.getRequestDispatcher("WEB-INF/jsp/courseDetail.jsp").forward(request, response);
@@ -144,8 +146,8 @@ public class CourseServlet extends HttpServlet {
             throws ServletException, IOException {
         try {
             int teacherId = Integer.parseInt((String) session.getAttribute("teacher_id"));
-            User user = userDAO.findByEmailOrUsername((String) session.getAttribute("username"));
-            List<Course> courses = courseDAO.getCoursesByTeacherId(teacherId);
+            Optional<User> user = userDAO.findByEmailOrUsername((String) session.getAttribute("username"));
+            List<Course> courses = courseDAO.getCoursesByTeacher(teacherId);
             request.setAttribute("user", user);
             request.setAttribute("courses", courses);
             request.getRequestDispatcher("/WEB-INF/jsp/courseDetail.jsp").forward(request, response);

@@ -8,52 +8,16 @@
     <packaging>war</packaging>
 
     <properties>
-<<<<<<< HEAD
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jakartaee>10.0.0</jakartaee>
     </properties>
     
     <dependencies>
             <dependency>
-=======
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>jakarta.platform</groupId>
-            <artifactId>jakarta.jakartaee-api</artifactId>
-            <version>9.1.0</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-core-jakarta</artifactId>
-            <version>5.6.15.Final</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.microsoft.sqlserver</groupId>
-            <artifactId>mssql-jdbc</artifactId>
-            <version>11.2.3.jre11</version>
-        </dependency>
-
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.33</version>
-        </dependency>
-
-        <dependency>
->>>>>>> 53ab6c237513d4082a5582bd813ee73d3fa9835c
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
             <version>0.4</version>
         </dependency>
-<<<<<<< HEAD
         <!-- Jakarta EE -->
         <dependency>
             <groupId>jakarta.platform</groupId>
@@ -63,7 +27,6 @@
         </dependency>
 
         <!-- JSTL API -->
-=======
         
         <dependency>
             <groupId>com.google.api-client</groupId>
@@ -88,23 +51,18 @@
             <artifactId>gson</artifactId>
             <version>2.10.1</version>
         </dependency>
->>>>>>> 53ab6c237513d4082a5582bd813ee73d3fa9835c
         <dependency>
             <groupId>jakarta.servlet.jsp.jstl</groupId>
             <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
             <version>2.0.0</version>
         </dependency>
-<<<<<<< HEAD
 
         <!-- JSTL Implementation -->
-=======
->>>>>>> 53ab6c237513d4082a5582bd813ee73d3fa9835c
         <dependency>
             <groupId>org.glassfish.web</groupId>
             <artifactId>jakarta.servlet.jsp.jstl</artifactId>
             <version>2.0.0</version>
         </dependency>
-<<<<<<< HEAD
 
 <dependency>
     <groupId>com.mysql</groupId>
@@ -159,19 +117,6 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-=======
-        <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20240303</version>
-        </dependency>
-    </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
->>>>>>> 53ab6c237513d4082a5582bd813ee73d3fa9835c
                 <artifactId>maven-war-plugin</artifactId>
                 <version>3.3.2</version>
             </plugin>

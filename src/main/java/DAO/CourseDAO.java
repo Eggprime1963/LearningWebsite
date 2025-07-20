@@ -89,7 +89,7 @@ public class CourseDAO {
      * @param teacherId
      * @return
      */
-    public List<Course> getCoursesByTeacherId(int teacherId) {
+    public List<Course> getCoursesByTeacher(int teacherId) {
         EntityManager em = JPAUtil.getEntityManager();
         try {
             TypedQuery<Course> query = em.createQuery(

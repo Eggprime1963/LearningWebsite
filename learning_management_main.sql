@@ -17,6 +17,9 @@
 
 --
 -- Table structure for table `Assignments`
+
+CREATE DATABASE IF NOT EXISTS learning_management;
+USE learning_management;
 --
 
 DROP TABLE IF EXISTS `Assignments`;
