@@ -88,14 +88,16 @@
 
 <!-- Chatbot Button -->
 <button id="chatbot-btn" title="Ask AI">
-    <i class="bi bi-robot"></i>
+    <i class="bi bi-robot"><span style="font-size:1.1rem;margin-right:4px;">🤖</span></i>
 </button>
 
 <!-- Chatbot Popup -->
 <div id="chatbot-popup">
     <div id="chatbot-header">
         <span>AI Chatbot</span>
-        <button type="button" id="chatbot-close" style="background:none;border:none;color:#fff;font-size:1.3rem;">&times;</button>
+        <button type="button" id="chatbot-close" style="background:none;border:none;color:#fff;font-size:1.3rem;display:flex;align-items:center;">
+            &times;
+        </button>
     </div>
     <div id="chatbot-messages">
         <div style="color:#888;">Hi! Ask me anything about this website or your courses.</div>

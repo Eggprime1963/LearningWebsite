@@ -1,3 +1,4 @@
+-- Active: 1752671726187@@127.0.0.1@3306@mysql
 -- MySQL dump 10.13  Distrib 8.0.42, for macos15 (x86_64)
 --
 -- Host: localhost    Database: learning_management
@@ -20,6 +21,7 @@
 
 CREATE DATABASE IF NOT EXISTS learning_management;
 USE learning_management;
+
 --
 
 DROP TABLE IF EXISTS `Assignments`;
