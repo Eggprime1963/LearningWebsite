@@ -521,6 +521,8 @@ flowchart TD
 - **JUnit** - Unit testing framework
 - **Log4j** - Logging and monitoring
 - **Docker** - Containerization and deployment (optional)
+- **Heroku** - Cloud platform deployment with automated scaling
+- **ClearDB** - MySQL database hosting on Heroku
 
 ## 📁 Project Structure
 
@@ -794,6 +796,40 @@ cp target/learning-platform-1.0.0.war $TOMCAT_HOME/webapps/
 $TOMCAT_HOME/bin/startup.sh
 ```
 
+### Heroku Deployment
+```bash
+# Method 1: Automated deployment script (recommended)
+# Windows users:
+deploy-heroku.bat
+
+# Linux/Mac users:
+chmod +x deploy-heroku.sh
+./deploy-heroku.sh
+
+# Method 2: Manual deployment
+# 1. Install Heroku CLI and login
+heroku login
+
+# 2. Create Heroku app
+heroku create your-app-name
+
+# 3. Add ClearDB MySQL addon
+heroku addons:create cleardb:ignite
+
+# 4. Set environment variables
+heroku config:set JAVA_OPTS="-Xmx512m -Xms256m"
+heroku config:set MAVEN_CUSTOM_OPTS="-DskipTests=true"
+
+# 5. Deploy
+git add .
+git commit -m "Deploy to Heroku"
+git push heroku main
+
+# 6. Initialize database (run once after first deployment)
+heroku config:get CLEARDB_DATABASE_URL
+# Use the database URL to run heroku-db-init.sql
+```
+
 ### Docker Deployment
 ```dockerfile
 FROM tomcat:10-jdk17-openjdk
@@ -952,7 +988,16 @@ copies or substantial portions of the Software.
 
 ## 🎉 Recent Updates & Changelog
 
-### Version 2.1 - AI Enhancement Release (Current)
+### Version 2.2 - Heroku Deployment Ready (Current)
+- ✅ **Heroku Configuration**: Complete deployment setup with automated scripts
+- ✅ **ClearDB Integration**: MySQL database configuration for Heroku
+- ✅ **Environment Detection**: Automatic configuration switching
+- ✅ **Heroku Buildpack**: Optimized Java buildpack configuration
+- ✅ **Database Migration**: Automated database initialization scripts
+- ✅ **Performance Tuning**: Heroku-optimized JVM and connection pool settings
+- ✅ **Deployment Scripts**: Automated deployment for Windows and Unix systems
+
+### Version 2.1 - AI Enhancement Release
 - ✅ **Enhanced AI Chatbot** with robust fallback system
 - ✅ **Course-Specific AI Assistant** with contextual responses  
 - ✅ **Intelligent Recommendations** with personalization
