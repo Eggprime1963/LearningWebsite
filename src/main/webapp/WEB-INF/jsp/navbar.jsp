@@ -22,14 +22,8 @@
         <nav class="navbar navbar-expand-lg navbar-light">
             <div class="container-fluid">
                 <a class="navbar-brand" href="${pageContext.request.contextPath}/home">
-                    <div class="book-icon-container">
-                        <i class="fas fa-book-open book-icon" ></i>
-                        <div class="play-button" >
-                            <svg viewBox="0 0 24 24">
-                                <path d="M8 5v14l11-7z"/>
-                            </svg>
-                        </div>
-                    </div>
+                    <img src="${pageContext.request.contextPath}/image/logo1.jpg" alt="Learning Platform" class="logo-img">
+                    <span class="brand-text">EduPlatform</span>
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
