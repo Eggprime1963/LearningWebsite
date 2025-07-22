@@ -105,7 +105,10 @@
             document.addEventListener('DOMContentLoaded', () => {
                 const toggleButton = document.getElementById('theme-toggle');
                 const htmlElement = document.documentElement;
-                const currentTheme = localStorage.getItem('theme') || 'light';
+                
+                // Get saved theme from localStorage or default to light
+                const savedTheme = localStorage.getItem('theme');
+                const currentTheme = savedTheme || 'light';
 
                 // Set initial theme
                 htmlElement.setAttribute('data-theme', currentTheme);
@@ -113,15 +116,48 @@
 
                 // Toggle theme on button click
                 toggleButton.addEventListener('click', () => {
-                    const newTheme = htmlElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+                    const currentTheme = htmlElement.getAttribute('data-theme');
+                    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                    
+                    // Update DOM and localStorage
                     htmlElement.setAttribute('data-theme', newTheme);
                     localStorage.setItem('theme', newTheme);
                     updateToggleIcon(newTheme);
+                    
+                    // Add visual feedback
+                    toggleButton.style.transform = 'scale(0.9)';
+                    setTimeout(() => {
+                        toggleButton.style.transform = 'scale(1)';
+                    }, 150);
                 });
 
                 function updateToggleIcon(theme) {
                     const icon = toggleButton.querySelector('i');
-                    icon.className = theme === 'light' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+                    if (theme === 'light') {
+                        icon.className = 'bi bi-moon-fill';
+                        toggleButton.title = 'Switch to Dark Mode';
+                    } else {
+                        icon.className = 'bi bi-sun-fill';
+                        toggleButton.title = 'Switch to Light Mode';
+                    }
                 }
+                
+                // Apply theme to all elements immediately
+                function applyThemeToElements(theme) {
+                    const elementsToUpdate = [
+                        '.navbar', '.course-card', '.card-title', '.card-text', 
+                        '.card-lessons', '.dropdown-menu', '.dropdown-item'
+                    ];
+                    
+                    elementsToUpdate.forEach(selector => {
+                        const elements = document.querySelectorAll(selector);
+                        elements.forEach(element => {
+                            element.style.transition = 'all 0.3s ease';
+                        });
+                    });
+                }
+                
+                // Apply theme immediately on load
+                applyThemeToElements(currentTheme);
             });
         </script>
