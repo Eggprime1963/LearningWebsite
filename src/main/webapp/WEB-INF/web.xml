@@ -1,14 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app version="6.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
+<web-app version="6.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         metadata-complete="false">
+    
+    <!-- Display Name -->
+    <display-name>Learning Platform</display-name>
+    
+    <!-- Description -->
+    <description>AI-Enhanced Learning Management System</description>
     
     <!-- Welcome Files -->
     <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
         <welcome-file>home</welcome-file>
+        <welcome-file>index.html</welcome-file>
     </welcome-file-list>
     
     <!-- Session Configuration -->
     <session-config>
         <session-timeout>30</session-timeout>
+        <cookie-config>
+            <http-only>true</http-only>
+            <secure>false</secure>
+        </cookie-config>
     </session-config>
     
     <!-- Default Servlet for Static Resources -->

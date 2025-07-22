@@ -13,9 +13,9 @@
     <!-- Font Awesome for Book Icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/homePage.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/homePage.css">
     <!-- Alternative: Inline CSS for testing -->
-    <!-- <link rel="stylesheet" href="${pageContext.request.contextPath}/css/homePage.css"> -->
+    <!-- <link rel="stylesheet" href="css/homePage.css"> -->
     <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -23,44 +23,71 @@
     <jsp:include page="navbar.jsp" />
 
     <!-- Main Content -->
-     <c:if test="${not empty sessionScope.username}">
-        <h1 class="fw-bold mb-3">Welcome Back, ${sessionScope.username}!</h1>
-    </c:if>
     <div class="container mt-4">
+        <c:if test="${not empty sessionScope.username}">
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="fw-bold mb-4 welcome-header">Welcome Back, ${sessionScope.username}!</h1>
+                </div>
+            </div>
+        </c:if>
         <div class="row">
             <!-- Sidebar with Learning Roadmap -->
             <div class="col-md-3">
                 <c:if test="${empty sessionScope.username}">
-                <div class="sidebar card p-3">
-                    <h1 class="fw-bold mb-3">Welcome to LearnHub</h1>
-                    <p class="lead mb-4">
+                <div class="sidebar welcome-section">
+                    <h1 class="fw-bold mb-3 welcome-title">Welcome to EduPlatform</h1>
+                    <p class="lead mb-4 welcome-text">
                         Unlock your learning journey! Sign up or log in to access personalized courses, track your progress, and get AI-powered recommendations tailored just for you.
                     </p>
-                    <a href="${pageContext.request.contextPath}/login" class="btn btn-primary btn-lg me-3">Login</a>
-                    <a href="${pageContext.request.contextPath}/register" class="btn btn-outline-primary btn-lg">Register</a>
+                    <div class="d-grid gap-2">
+                        <a href="${pageContext.request.contextPath}/login" class="btn btn-primary btn-lg">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>
+                            Login
+                        </a>
+                        <a href="${pageContext.request.contextPath}/register" class="btn btn-outline-primary btn-lg">
+                            <i class="bi bi-person-plus me-2"></i>
+                            Register
+                        </a>
+                    </div>
                 </div></c:if>
                 
                 <c:if test="${not empty sessionScope.username}">
-                <div class="sidebar card p-3">
-                    <h4>Learning Roadmap</h4>
-                    <ul class="list-group">
-                        <li class="list-group-item">Module 1: Introduction
-                            <div class="progress mt-2">
-                                <div class="progress-bar" role="progressbar" style="width: 60%;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100">60%</div>
+                <div class="sidebar">
+                    <h4 class="roadmap-title">Learning Roadmap</h4>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item roadmap-item">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-semibold">Module 1: Introduction</span>
+                                <span class="badge bg-success">50%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 50%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
                             </div>
                         </li>
-                        <li class="list-group-item">Module 2: Intermediate
-                            <div class="progress mt-2">
-                                <div class="progress-bar" role="progressbar" style="width: 30%;" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100">30%</div>
+                        <li class="list-group-item roadmap-item">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-semibold">Module 2: Intermediate</span>
+                                <span class="badge bg-warning">30%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-warning" role="progressbar" style="width: 30%;" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100"></div>
                             </div>
                         </li>
-                        <li class="list-group-item">Module 3: Advanced
-                            <div class="progress mt-2">
-                                <div class="progress-bar" role="progressbar" style="width: 10%;" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100">10%</div>
+                        <li class="list-group-item roadmap-item">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-semibold">Module 3: Advanced</span>
+                                <span class="badge bg-secondary">10%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-secondary" role="progressbar" style="width: 10%;" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
                             </div>
                         </li>
                     </ul>
-                    <a href="roadmap.jsp" class="btn btn-primary mt-3">View Full Roadmap</a>
+                    <button class="btn btn-primary w-100 mt-3 roadmap-btn">
+                        <i class="bi bi-map me-2"></i>
+                        View Full Roadmap
+                    </button>
                 </div></c:if>
                 
             </div>

@@ -40,29 +40,45 @@ public class HomeServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+        logger.info("HomeServlet: Processing request for " + request.getRequestURI());
+        
         try {
             // Get user context for personalization
             HttpSession session = request.getSession(false);
             User currentUser = null;
             if (session != null) {
                 currentUser = (User) session.getAttribute("user");
+                logger.info("HomeServlet: User session found for " + session.getAttribute("username"));
+            } else {
+                logger.info("HomeServlet: No user session found");
             }
             
-            // Fetch all courses with their teacher names and lecture counts
-            List<Object[]> coursesWithTeachers = courseDAO.getCoursesWithTeacherNames();
+            // Initialize empty lists to prevent null pointer exceptions
             List<Course> courses = new ArrayList<>();
+            List<Course> featuredCourses = new ArrayList<>();
             
-            for (Object[] row : coursesWithTeachers) {
-                Course course = (Course) row[0];
-                String teacherName = (String) row[1];
-                Long lectureCount = (Long) row[2];
-                course.setTeacherName(teacherName);
-                course.setLectureCount(lectureCount);
-                courses.add(course);
+            try {
+                // Fetch all courses with their teacher names and lecture counts
+                List<Object[]> coursesWithTeachers = courseDAO.getCoursesWithTeacherNames();
+                
+                for (Object[] row : coursesWithTeachers) {
+                    Course course = (Course) row[0];
+                    String teacherName = (String) row[1];
+                    Long lectureCount = (Long) row[2];
+                    course.setTeacherName(teacherName);
+                    course.setLectureCount(lectureCount);
+                    courses.add(course);
+                }
+                
+                logger.info("HomeServlet: Successfully loaded " + courses.size() + " courses");
+                
+                // Generate AI-powered featured courses
+                featuredCourses = generateAIFeaturedCourses(currentUser, courses);
+                
+            } catch (Exception e) {
+                logger.log(Level.WARNING, "HomeServlet: Error loading courses from database, continuing with empty list", e);
+                // Continue execution with empty lists - don't fail the entire page
             }
-            
-            // Generate AI-powered featured courses
-            List<Course> featuredCourses = generateAIFeaturedCourses(currentUser, courses);
             
             // Set attributes for JSP
             request.setAttribute("courses", courses);
@@ -72,12 +88,30 @@ public class HomeServlet extends HttpServlet {
             // Add AI assistant availability status
             request.setAttribute("aiAssistantAvailable", isAIAssistantAvailable());
             
+            logger.info("HomeServlet: Forwarding to homePage.jsp");
             request.getRequestDispatcher("/WEB-INF/jsp/homePage.jsp").forward(request, response);
             
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error loading courses", e);
-            request.setAttribute("error", "Error loading courses: " + e.getMessage());
-            request.getRequestDispatcher("/WEB-INF/jsp/homePage.jsp").forward(request, response);
+            logger.log(Level.SEVERE, "HomeServlet: Critical error in doGet", e);
+            
+            // Set minimal attributes to prevent JSP errors
+            request.setAttribute("courses", new ArrayList<Course>());
+            request.setAttribute("featuredCourses", new ArrayList<Course>());
+            request.setAttribute("aiFeatured", false);
+            request.setAttribute("aiAssistantAvailable", false);
+            request.setAttribute("error", "Application is starting up. Please refresh the page in a moment.");
+            
+            try {
+                request.getRequestDispatcher("/WEB-INF/jsp/homePage.jsp").forward(request, response);
+            } catch (Exception fwdError) {
+                // If JSP forwarding also fails, send a simple response
+                response.setContentType("text/html");
+                response.getWriter().println("<html><body>");
+                response.getWriter().println("<h1>Learning Platform</h1>");
+                response.getWriter().println("<p>Application is starting up. Please refresh the page in a moment.</p>");
+                response.getWriter().println("<a href='/'>Refresh</a>");
+                response.getWriter().println("</body></html>");
+            }
         }
     }
     

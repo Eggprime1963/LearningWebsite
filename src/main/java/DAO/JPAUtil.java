@@ -9,8 +9,8 @@ import util.HerokuConfig;
 
 public class JPAUtil {
 
-    // The name "learning-management-unit" must match the name defined in your persistence.xml
-    private static final String PERSISTENCE_UNIT_NAME = "learning-management-unit";
+    // The name must match the name defined in persistence.xml
+    private static final String PERSISTENCE_UNIT_NAME = "LearningPlatformPU";
     private static EntityManagerFactory factory;
 
     /**
