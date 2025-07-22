@@ -72,22 +72,7 @@ public class AssignmentDAO {
         }
     }
 
-    public List<Assignment> getAssignmentsByCourse(int courseId) {
-        EntityManager em = JPAUtil.getEntityManager();
-        try {
-            TypedQuery<Assignment> query = em.createQuery(
-                "SELECT a FROM Assignment a WHERE a.course.idCourse = :courseId AND a.status = 'active'", 
-                Assignment.class
-            );
-            query.setParameter("courseId", courseId);
-            return query.getResultList();
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error retrieving assignments for course ID: " + courseId, e);
-            return Collections.emptyList();
-        } finally {
-            em.close();
-        }
-    }
+  
 
     public void deleteByCourseId(int courseId) {
         EntityManager em = JPAUtil.getEntityManager();
@@ -103,17 +88,38 @@ public class AssignmentDAO {
         }
     }
 
-    public List<Assignment> getAssignmentsByLecture(int lectureId) {
+    public List<Assignment> getAssignmentsByLecture(int courseId,int lectureId) //them courseID
+    {
         EntityManager em = JPAUtil.getEntityManager();
         try {
             TypedQuery<Assignment> query = em.createQuery(
-                "SELECT a FROM Assignment a WHERE a.lecture.id = :lectureId AND a.status = 'active'",
+                "SELECT a FROM Assignment a WHERE a.lecture.id = :lectureId AND a.status = 'active'",// sua lai cau query
                 Assignment.class
             );
             query.setParameter("lectureId", lectureId);
             return query.getResultList();
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error retrieving assignments for lecture ID: " + lectureId, e);
+            return Collections.emptyList();
+        } finally {
+            em.close();
+        }
+    }
+    public List<Assignment> getAssignmentsByCourseId(int courseId) {
+        EntityManager em = JPAUtil.getEntityManager();
+        try {
+            TypedQuery<Assignment> query = em.createQuery(
+                "SELECT a FROM Assignment a WHERE a.idCourse = :courseId",
+                Assignment.class
+            );
+            query.setParameter("courseId", courseId);
+            List<Assignment> assignments = query.getResultList();
+            logger.log(Level.INFO, "Found {0} assignments for courseId: {1}", 
+                new Object[]{assignments.size(), courseId});
+            return assignments;
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error retrieving assignments for courseId: {0}, Error: {1}", 
+                new Object[]{courseId, e.getMessage()});
             return Collections.emptyList();
         } finally {
             em.close();

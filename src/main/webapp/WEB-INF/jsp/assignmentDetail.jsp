@@ -5,7 +5,7 @@
     <div class="row">
         <!-- Sidebar: Lecture and Assignment Name -->
         <div class="col-md-3 border-end">
-            <h5 class="mt-4"><strong>${lecture.name}</strong></h5>
+            <h5 class="mt-4"><strong>${lecture.title}</strong></h5>
             <div class="mb-2">${assignment.name}</div>
         </div>
         <!-- Main Content: Assignment Details -->

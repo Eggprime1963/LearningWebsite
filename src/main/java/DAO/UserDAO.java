@@ -1,5 +1,6 @@
 package dao;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.mindrot.jbcrypt.BCrypt;
@@ -82,5 +83,85 @@ public class UserDAO {
             }
         }
         return Optional.empty();
+    }
+    
+    // Admin-related methods
+    public List<User> getAllUsers() {
+        EntityManager em = JPAUtil.getEntityManager();
+        try {
+            TypedQuery<User> query = em.createQuery("SELECT u FROM User u ORDER BY u.id", User.class);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+    
+    public List<User> getUsersByRole(String role) {
+        EntityManager em = JPAUtil.getEntityManager();
+        try {
+            TypedQuery<User> query = em.createQuery("SELECT u FROM User u WHERE u.role = :role ORDER BY u.username", User.class);
+            query.setParameter("role", role);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+    
+    public void updateUserRole(int userId, String newRole) {
+        EntityManager em = JPAUtil.getEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+        try {
+            transaction.begin();
+            User user = em.find(User.class, userId);
+            if (user != null) {
+                user.setRole(newRole);
+                em.merge(user);
+            }
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction.isActive()) transaction.rollback();
+            throw new RuntimeException("Could not update user role", e);
+        } finally {
+            em.close();
+        }
+    }
+    
+    public void deleteUser(int userId) {
+        EntityManager em = JPAUtil.getEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+        try {
+            transaction.begin();
+            User user = em.find(User.class, userId);
+            if (user != null) {
+                em.remove(user);
+            }
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction.isActive()) transaction.rollback();
+            throw new RuntimeException("Could not delete user", e);
+        } finally {
+            em.close();
+        }
+    }
+    
+    public long getUserCount() {
+        EntityManager em = JPAUtil.getEntityManager();
+        try {
+            TypedQuery<Long> query = em.createQuery("SELECT COUNT(u) FROM User u", Long.class);
+            return query.getSingleResult();
+        } finally {
+            em.close();
+        }
+    }
+    
+    public long getUserCountByRole(String role) {
+        EntityManager em = JPAUtil.getEntityManager();
+        try {
+            TypedQuery<Long> query = em.createQuery("SELECT COUNT(u) FROM User u WHERE u.role = :role", Long.class);
+            query.setParameter("role", role);
+            return query.getSingleResult();
+        } finally {
+            em.close();
+        }
     }
 }

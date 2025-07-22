@@ -15,7 +15,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@WebServlet("/chatbot")
+@WebServlet(name = "ChatbotServlet", urlPatterns = {"/chatbot", "/ai", "/chat"})
 public class ChatbotServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)

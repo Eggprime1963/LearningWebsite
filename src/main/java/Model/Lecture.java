@@ -16,7 +16,7 @@ public class Lecture {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private int idLecture;
+    private int id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id")
@@ -37,22 +37,32 @@ public class Lecture {
     public Lecture() {
     }
 
-    public Lecture(Course course, String title, String content, String videoUrl, String status) {
+    public Lecture(Course course, String title, String videoUrl, String content, String status) {
         this.course = course;
         this.title = title;
-        this.content = content;
         this.videoUrl = videoUrl;
+        this.content = content;
         this.status = status;
     }
 
+    public Lecture(int id, Course course, String title, String videoUrl, String content, String status) {
+        this.id = id;
+        this.course = course;
+        this.title = title;
+        this.videoUrl = videoUrl;
+        this.content = content;
+        this.status = status;
+    }
+    
+
     // --- Getters and Setters ---
 
-    public int getIdLecture() {
-        return idLecture;
+    public int getId() {
+        return id;
     }
 
-    public void setIdLecture(int idLecture) {
-        this.idLecture = idLecture;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public Course getCourse() {
@@ -62,6 +72,18 @@ public class Lecture {
     public void setCourse(Course course) {
         this.course = course;
     }
+
+    // Helper method for backward compatibility with int-based access
+    public int getIdCourse() {
+        return course != null ? course.getIdCourse() : 0;
+    }
+    
+    public void setIdCourse(int idCourse) {
+        // This is a placeholder - in practice, you'd need to load the Course entity
+        // For now, we'll need to handle this in the DAO layer
+    }
+
+   
 
     public String getTitle() {
         return title;

@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
+import java.time.format.DateTimeFormatter;
 
 @Entity
 @Table(name = "Enrollments")
@@ -76,5 +77,9 @@ public class Enrollment {
     public void setStatus(String status) {
         this.status = status;
     }
+     public String getFormattedEnrollmentDate() {
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    return this.enrollmentDate.format(formatter);
+}
 
 }

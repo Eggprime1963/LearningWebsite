@@ -31,8 +31,8 @@
                     <p class="lead mb-4">
                         Unlock your learning journey! Sign up or log in to access personalized courses, track your progress, and get AI-powered recommendations tailored just for you.
                     </p>
-                    <a href="login.jsp" class="btn btn-primary btn-lg me-3">Login</a>
-                    <a href="register.jsp" class="btn btn-outline-primary btn-lg">Register</a>
+                    <a href="${pageContext.request.contextPath}/login" class="btn btn-primary btn-lg me-3">Login</a>
+                    <a href="${pageContext.request.contextPath}/register" class="btn btn-outline-primary btn-lg">Register</a>
                 </div>
             </div>
             <!-- Right column: AI Recommended Courses from DB -->

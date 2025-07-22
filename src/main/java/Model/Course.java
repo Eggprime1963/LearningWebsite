@@ -12,6 +12,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 
 
@@ -35,6 +36,14 @@ public class Course {
 
     @Column(name = "image")
     private String image;
+    
+    // Transient field for teacher name (not stored in database)
+    @Transient
+    private String teacherName;
+    
+    // Transient field for lecture count (not stored in database)
+    @Transient
+    private Long lectureCount;
 
     // Correct: mappedBy points to the 'course' field in the Lecture entity
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -43,7 +52,9 @@ public class Course {
     // Correct: mappedBy points to the 'course' field in the Assignment entity
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Assignment> assignments = new ArrayList<>();
-
+    
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Enrollment> enrollments = new ArrayList<>();
     // Constructors, Getters, and Setters remain the same...
     public Course() {}
 
@@ -54,6 +65,7 @@ public class Course {
         this.image=image;
         this.lectures = new ArrayList<>();
         this.assignments = new ArrayList<>();
+        this.enrollments = new ArrayList<>();
     }
 
     public int getIdTeacher() {
@@ -95,6 +107,22 @@ public class Course {
     public void setDescription(String description) {
         this.description = description;
     }
+    
+    public String getTeacherName() {
+        return teacherName;
+    }
+
+    public void setTeacherName(String teacherName) {
+        this.teacherName = teacherName;
+    }
+
+    public Long getLectureCount() {
+        return lectureCount;
+    }
+
+    public void setLectureCount(Long lectureCount) {
+        this.lectureCount = lectureCount;
+    }
 
 
     public List<Lecture> getLectures() {
@@ -113,5 +141,25 @@ public class Course {
         this.assignments = assignments;
     }
 
+    public List<Enrollment> getEnrollments() {
+        return enrollments;
+    }
+
+    public void setEnrollments(List<Enrollment> enrollments) {
+        this.enrollments = enrollments;
+    }
+
+    // Helper method to get students through enrollments
+    public List<User> getStudents() {
+        return enrollments.stream()
+                .map(Enrollment::getStudent)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    public void setStudents(List<User> students) {
+        this.enrollments = students.stream()
+                .map(student -> new Enrollment(student, this, java.time.LocalDateTime.now(), ""))
+                .collect(java.util.stream.Collectors.toList());
+    }
 
 }

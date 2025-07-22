@@ -16,6 +16,13 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
+-- Create database and use it
+CREATE DATABASE IF NOT EXISTS learning_management;
+USE learning_management;
+
+-- Disable foreign key checks temporarily for clean recreation
+SET FOREIGN_KEY_CHECKS = 0;
+
 --
 -- Table structure for table `Assignments`
 
@@ -92,6 +99,8 @@ DROP TABLE IF EXISTS `Enrollments`;
 CREATE TABLE `Enrollments` (
   `student_id` int NOT NULL,
   `course_id` int NOT NULL,
+  `enrollment_date` datetime DEFAULT CURRENT_TIMESTAMP,
+  `status` varchar(100) DEFAULT 'active',
   PRIMARY KEY (`student_id`,`course_id`),
   KEY `course_id` (`course_id`),
   CONSTRAINT `enrollments_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `Users` (`id`),
@@ -101,10 +110,32 @@ CREATE TABLE `Enrollments` (
 
 --
 -- Dumping data for table `Enrollments`
+-- Adding student enrollments across different courses for testing
 --
 
 LOCK TABLES `Enrollments` WRITE;
 /*!40000 ALTER TABLE `Enrollments` DISABLE KEYS */;
+INSERT INTO `Enrollments` VALUES 
+(3,1,'2023-09-01 08:00:00','active'),      -- student1 enrolled in Python Basics
+(6,1,'2023-09-02 09:00:00','completed'),   -- user01 enrolled in Python Basics
+(8,1,'2024-01-15 10:00:00','active'),      -- hoang enrolled in Python Basics
+(12,2,'2024-02-10 11:00:00','active'),     -- user09 enrolled in Java Fundamentals
+(18,2,'2025-03-05 12:00:00','expired'),    -- dat enrolled in Java Fundamentals
+(19,3,'2023-04-20 13:00:00','active'),     -- user02 enrolled in C++ Programming
+(20,3,'2024-05-25 14:00:00','completed'),  -- user05 enrolled in C++ Programming
+(3,4,'2025-06-30 15:00:00','active'),      -- student1 enrolled in JavaScript Essentials
+(6,4,'2023-07-10 16:00:00','expired'),     -- user01 enrolled in JavaScript Essentials
+(8,5,'2024-08-15 17:00:00','active'),      -- hoang enrolled in Ruby on Rails
+(12,6,'2025-09-20 18:00:00','completed'),  -- user09 enrolled in PHP Basics
+(18,7,'2023-10-25 19:00:00','active'),     -- dat enrolled in Go Programming
+(19,8,'2024-11-30 20:00:00','active'),     -- user02 enrolled in Swift for iOS
+(20,9,'2025-12-05 21:00:00','expired'),    -- user05 enrolled in Kotlin Basics
+(6,10,'2023-01-10 08:30:00','active'),     -- user01 enrolled in Rust Programming
+(3,16,'2024-02-15 09:30:00','completed'),  -- student1 enrolled in Java Programming (course 16)
+(12,17,'2025-03-20 10:30:00','active'),    -- user09 enrolled in Java Programming (course 17)
+(18,1,'2023-04-25 11:30:00','active'),     -- dat enrolled in Python Basics
+(19,2,'2024-05-30 12:30:00','expired'),    -- user02 enrolled in Java Fundamentals
+(20,4,'2025-06-05 13:30:00','active');     -- user05 enrolled in JavaScript Essentials
 /*!40000 ALTER TABLE `Enrollments` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -232,6 +263,10 @@ LOCK TABLES `Users` WRITE;
 INSERT INTO `Users` VALUES (1,'admin','$2a$10$3zHz9B..F4T7Y3b2fG7q5e6J7Qz4z2b5q8L9W4m2T8F7Y3N4M6K2','admin@example.com','admin',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(2,'teacher1','$2a$10$3zHz9B..F4T7Y3b2fG7q5e6J7Qz4z2b5q8L9W4m2T8F7Y3N4M6K2','teacher1@example.com','teacher',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(3,'student1','$2a$10$3zHz9B..F4T7Y3b2fG7q5e6J7Qz4z2b5q8L9W4m2T8F7Y3N4M6K2','student1@example.com','student',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(4,'lvd27012004@gmail.com','','lvd27012004@gmail.com','teacher','104275197933380558868',NULL,NULL,NULL,NULL,NULL,NULL,NULL),(5,'datlvde180983','','datlvde180983@fpt.edu.vn','teacher','109653592243158745281',NULL,NULL,NULL,NULL,NULL,NULL,NULL),(6,'user01','$2a$10$Qc2iIzqZo/2W/LGUoEqPfuoCrIWwbbS2schBVAmMB/iPT8eCh/sPa','a@gmail.com','student',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(7,'a','123','dat@gmail.com','student',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(8,'hoang','$2a$10$nZid.RsJg8vO5uPk994.Cuu0UUWRJbjPNcD0JWGctyJFTomq2NR12','hoang@gmail.com','student',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(12,'user09','$2a$10$lvGrGyqK2Ka0KtrwqxWI7O4wbNrP0YDBv6nppWLyXPCT2MJM8Wur2','wirenvahd@hotmail.com','student',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(13,'asd','$2a$10$nkMdcCVtDjlOZiKmBLMvzuHNWbHlQUsZY/gfMufIMC8ebmJkgMtU6','asdasd@gmail.com','teacher',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(17,'huy','$2a$10$Nvt9/PLxdO4y6poyHAQLIeOrOcrK7cH5Zfa5t.ou/OzNDcRqXh7v.','huy@gmail.com','teacher',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(18,'dat','$2a$10$VXkeStchcyxu57JLG2YVcuUcX8BIsQOQS5yYeODh3wLLiOScclAw6','123a@gmail.com','student',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(19,'user02','$2a$10$AqvSAr1TtuMYP/H6dtAYn./dQ5eNQtDc3SpPVpmt0P2vbsUo/KTwS','user02@gmail.com','student',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(20,'user05','$2a$10$s7SS1DJ3prb37QAyGMcLJuC793SKz.YjslDzeV.hL918OOOtk/6Lq','user05@gmail.com','student',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `Users` ENABLE KEYS */;
 UNLOCK TABLES;
+
+-- Re-enable foreign key checks
+SET FOREIGN_KEY_CHECKS = 1;
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -242,4 +277,5 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
+-- Database setup completed successfully with enrollments
 -- Dump completed on 2025-07-19  1:27:32

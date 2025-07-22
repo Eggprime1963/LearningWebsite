@@ -58,7 +58,25 @@
         <div>
             <h2>Sign In</h2>
             <p>Access your courses, track your progress, and connect with the learning community.</p>
-        </div>
+            <div style="display: flex; align-items: center; gap: var(--space-3);">
+                <div style="width: 32px; height: 32px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-play-circle"></i>
+                </div>
+                <span style="font-size: 0.875rem;">Resume where you left off</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: var(--space-3);">
+                <div style="width: 32px; height: 32px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <span style="font-size: 0.875rem;">Track your learning progress</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: var(--space-3);">
+                <div style="width: 32px; height: 32px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-certificate"></i>
+                </div>
+                <span style="font-size: 0.875rem;">Earn verified certificates</span>
+            </div>
+            </div>
     </div>
     <form class="login-form" method="post" action="${pageContext.request.contextPath}/login">
         <c:if test="${not empty message}">

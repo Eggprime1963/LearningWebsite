@@ -22,7 +22,7 @@ import model.Assignment;
 import model.Submission;
 import model.User;
 
-@WebServlet(name = "SubmissionServlet", urlPatterns = {"/submit"})
+@WebServlet(name = "SubmissionServlet", urlPatterns = {"/submit", "/submission", "/submissions"})
 @MultipartConfig(
     fileSizeThreshold = 1024 * 1024 * 1, // 1 MB
     maxFileSize = 1024 * 1024 * 10,      // 10 MB

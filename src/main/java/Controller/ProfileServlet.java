@@ -1,5 +1,6 @@
 package controller;
 
+
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
@@ -9,7 +10,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import dao.*;
+import dao.ActivityDAO;
+import dao.UserDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -20,7 +22,7 @@ import model.ActivityDate;
 import model.User;
 import model.UserActivity;
 
-@WebServlet(name = "ProfileServlet", urlPatterns = {"/profile"})
+@WebServlet(name = "ProfileServlet", urlPatterns = {"/profile", "/user", "/account"})
 public class ProfileServlet extends HttpServlet {
     private final UserDAO userDAO = new UserDAO();
     private final ActivityDAO activityDAO = new ActivityDAO();
@@ -67,7 +69,7 @@ public class ProfileServlet extends HttpServlet {
         request.setAttribute("currentMonth", today.getMonthValue());
         request.setAttribute("currentYear", today.getYear());
 
-        request.getRequestDispatcher("WEB-INF/jsp/profile.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/profile.jsp").forward(request, response);
     }
 
     @Override
@@ -135,6 +137,6 @@ public class ProfileServlet extends HttpServlet {
             ", school=" + user.getSchool() +
             ", googleId=" + user.getGoogleId());
 
-        request.getRequestDispatcher("WEB-INF/jsp/profile.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/profile.jsp").forward(request, response);
     }
 }

@@ -13,12 +13,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "Assignments")
+@Table(name = "assignments")
 public class Assignment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private int idAssignment;
+    private int id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id")
@@ -40,6 +40,7 @@ public class Assignment {
     @Column(name = "status")
     private String status;
 
+    // Constructors
     public Assignment() {
     }
 
@@ -52,12 +53,13 @@ public class Assignment {
         this.status = status;
     }
 
-    public int getIdAssignment() {
-        return idAssignment;
+    // Getters and Setters
+    public int getId() {
+        return id;
     }
 
-    public void setIdAssignment(int idAssignment) {
-        this.idAssignment = idAssignment;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public Course getCourse() {
@@ -106,5 +108,37 @@ public class Assignment {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+        // Helper methods for backward compatibility with int-based access
+    public int getIdCourse() {
+        return course != null ? course.getIdCourse() : 0;
+    }
+    
+    public void setIdCourse(int idCourse) {
+        // This is a placeholder - in practice, you'd need to load the Course entity
+        // For now, we'll need to handle this in the DAO layer
+    }
+    
+    public int getIdLecture() {
+        return lecture != null ? lecture.getId() : 0;
+    }
+    
+    public void setIdLecture(int idLecture) {
+        // This is a placeholder - in practice, you'd need to load the Lecture entity
+        // For now, we'll need to handle this in the DAO layer
+    }
+
+    public String getCourseName() {
+        return course != null ? course.getName() : "";
+    }
+
+    public String getLectureTitle() {
+        return lecture != null ? lecture.getTitle() : "";
+    }
+
+    // For JSP compatibility
+    public java.util.Date getDueDateAsJavaUtilDate() {
+        return dueDate != null ? java.sql.Timestamp.valueOf(dueDate) : null;
     }
 }

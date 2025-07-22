@@ -1,6 +1,8 @@
 package dao;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,11 +15,12 @@ import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.TypedQuery;
 import model.Assignment;
 import model.Submission;
+import model.User;
 
 public class SubmissionDAO {
 
     private static final Logger logger = Logger.getLogger(SubmissionDAO.class.getName());
-
+    private static final Logger LOGGER = Logger.getLogger(SubmissionDAO.class.getName());
     /**
      * Saves a new submission record to the database.
      *
@@ -31,7 +34,7 @@ public class SubmissionDAO {
             transaction.begin();
             em.persist(submission);
             transaction.commit();
-            logger.info("Successfully saved submission for assignment ID: " + submission.getAssignment().getIdAssignment());
+            logger.info("Successfully saved submission for assignment ID: " + submission.getAssignment().getId());
             return submission;
         } catch (Exception e) {
             if (transaction.isActive()) {
@@ -56,12 +59,12 @@ public class SubmissionDAO {
             transaction.begin();
             em.merge(submission);
             transaction.commit();
-            logger.info("Successfully updated submission ID: " + submission.getIdSubmission());
+            logger.info("Successfully updated submission ID: " + submission.getId());
         } catch (Exception e) {
             if (transaction.isActive()) {
                 transaction.rollback();
             }
-            logger.log(Level.SEVERE, "Error updating submission ID: " + submission.getIdSubmission(), e);
+            logger.log(Level.SEVERE, "Error updating submission ID: " + submission.getId(), e);
             throw new RuntimeException("Failed to update submission", e);
         } finally {
             em.close();
@@ -146,7 +149,7 @@ public class SubmissionDAO {
     public Map<Integer, List<Submission>> getSubmissionsByAssignments(List<Assignment> assignments) {
         Map<Integer, List<Submission>> result = new HashMap<>();
         for (Assignment assignment : assignments) {
-            result.put(assignment.getIdAssignment(), getSubmissionsByAssignment(assignment.getIdAssignment()));
+            result.put(assignment.getId(), getSubmissionsByAssignment(assignment.getId()));
         }
         return result;
     }
@@ -161,16 +164,80 @@ public class SubmissionDAO {
                     "SELECT s FROM Submission s WHERE s.assignment.idAssignment = :assignmentId AND s.student.idUser = :studentId",
                     Submission.class
                 );
-                query.setParameter("assignmentId", assignment.getIdAssignment());
+                query.setParameter("assignmentId", assignment.getId());
                 query.setParameter("studentId", studentId);
                 List<Submission> submissions = query.getResultList();
                 if (!submissions.isEmpty()) {
-                    result.put(assignment.getIdAssignment(), submissions.get(0));
+                    result.put(assignment.getId(), submissions.get(0));
                 }
             }
         } finally {
             em.close();
         }
         return result;
+    }
+  public List<Submission> getSubmissionsBeforeDueDate(int assignmentId, Date dueDate) {
+        EntityManager em = JPAUtil.getEntityManager();
+        try {
+            LocalDateTime dueDateTime = dueDate.toInstant()
+                    .atZone(java.time.ZoneId.systemDefault())
+                    .toLocalDateTime();
+
+            TypedQuery<Submission> query = em.createQuery(
+                "SELECT s FROM Submission s WHERE s.assignment.id = :assignmentId AND s.submissionDate < :dueDate",
+                Submission.class
+            );
+            query.setParameter("assignmentId", assignmentId);
+            query.setParameter("dueDate", dueDateTime);
+
+            List<Submission> submissions = query.getResultList();
+            LOGGER.log(Level.INFO, "Found {0} submissions for assignmentId: {1}", 
+                new Object[]{submissions.size(), assignmentId});
+
+            // Handle null relationships as in the original
+            for (Submission s : submissions) {
+                if (s.getStudent() == null) {
+                    LOGGER.log(Level.WARNING, "No student found for submission ID: {0}", s.getId());
+                    s.setStudent(new User());
+                }
+                if (s.getAssignment() == null) {
+                    LOGGER.log(Level.WARNING, "No assignment found for submission ID: {0}", s.getId());
+                    s.setAssignment(new Assignment());
+                }
+            }
+            return submissions;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error retrieving submissions for assignmentId: {0}, dueDate: {1}", 
+                new Object[]{assignmentId, dueDate});
+            return Collections.emptyList();
+        } finally {
+            em.close();
+        }
+    }
+
+    public void updateGrade(int submissionId, double grade) {
+        EntityManager em = JPAUtil.getEntityManager();
+        try {
+            em.getTransaction().begin();
+            Submission submission = em.find(Submission.class, submissionId);
+            if (submission != null) {
+                submission.setGrade(grade);
+                em.merge(submission);
+                LOGGER.log(Level.INFO, "Updated grade for submissionId: {0} to {1}", 
+                    new Object[]{submissionId, grade});
+            } else {
+                LOGGER.log(Level.WARNING, "Submission not found for ID: {0}", submissionId);
+            }
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            LOGGER.log(Level.SEVERE, "Error updating grade for submissionId: {0}, Error: {1}", 
+                new Object[]{submissionId, e.getMessage()});
+            throw new RuntimeException("Failed to update grade", e);
+        } finally {
+            em.close();
+        }
     }
 }

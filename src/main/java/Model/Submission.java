@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.util.Date;
 
 @Entity
 @Table(name = "Submissions")
@@ -18,7 +19,7 @@ public class Submission {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private int idSubmission;
+    private int id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assignment_id")
@@ -53,14 +54,15 @@ public class Submission {
 
     // --- Getters and Setters ---
 
-    public int getIdSubmission() {
-        return idSubmission;
+    public int getId() {
+        return id;
     }
 
-    public void setIdSubmission(int idSubmission) {
-        this.idSubmission = idSubmission;
+    public void setId(int id) {
+        this.id = id;
     }
 
+ 
     public Assignment getAssignment() {
         return assignment;
     }
@@ -107,5 +109,11 @@ public class Submission {
 
     public void setGrade(Double grade) {
         this.grade = grade;
+    }
+      public Date getSubmissionDateAsDate() {
+        if (submissionDate != null) {
+            return Date.from(submissionDate.atZone(java.time.ZoneId.systemDefault()).toInstant());
+        }
+        return null;
     }
 }

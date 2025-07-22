@@ -12,7 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.User;
 
-@WebServlet(name = "RegisterServlet", urlPatterns = "/register")
+@WebServlet(name = "RegisterServlet", urlPatterns = {"/register", "/signup", "/sign-up"})
 public class RegisterServlet extends HttpServlet {
     private final UserDAO userDAO = new UserDAO();
 
@@ -20,7 +20,7 @@ public class RegisterServlet extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         // Redirect to registration page
-        request.getRequestDispatcher("WEB-INF/jsp/register.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/register.jsp").forward(request, response);
     }
 
     @Override
@@ -37,14 +37,14 @@ public class RegisterServlet extends HttpServlet {
 
         if (email == null || username == null || (password == null && googleId == null)) {
             request.setAttribute("message", "All required fields must be filled.");
-            request.getRequestDispatcher("WEB-INF/jsp/register.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/register.jsp").forward(request, response);
             return;
         }
 
         // Check if user already exists
         if (userDAO.findByEmailOrUsername(email).isPresent()) {
             request.setAttribute("message", "Email is already registered.");
-            request.getRequestDispatcher("WEB-INF/jsp/register.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/register.jsp").forward(request, response);
             return;
         }
 
@@ -63,7 +63,7 @@ public class RegisterServlet extends HttpServlet {
         } catch (Exception e) {
             request.setAttribute("message", "Registration failed: " + e.getMessage());
         }
-        request.getRequestDispatcher("WEB-INF/jsp/register.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/register.jsp").forward(request, response);
     }
 
 }

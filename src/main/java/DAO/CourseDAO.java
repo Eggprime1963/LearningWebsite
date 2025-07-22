@@ -50,6 +50,20 @@ public class CourseDAO {
         }
     }
     
+    // Method to get courses with teacher names and lecture count
+    public List<Object[]> getCoursesWithTeacherNames() {
+        EntityManager em = JPAUtil.getEntityManager();
+        try {
+            String jpql = "SELECT c, u.username, " +
+                         "(SELECT COUNT(l) FROM Lecture l WHERE l.course.idCourse = c.idCourse) " +
+                         "FROM Course c JOIN User u ON c.idTeacher = u.id";
+            TypedQuery<Object[]> query = em.createQuery(jpql, Object[].class);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+    
     public void updateCourse(Course course) {
         EntityManager em = JPAUtil.getEntityManager();
         EntityTransaction transaction = em.getTransaction();
@@ -198,4 +212,23 @@ public class CourseDAO {
             em.close();
         }
     }
+    public Course getCourseById(int id) {
+        EntityManager em = JPAUtil.getEntityManager();
+        try {
+            Course course = em.find(Course.class, id);
+            if (course != null) {
+                logger.log(Level.INFO, "Found course with ID: {0}", id);
+            } else {
+                logger.log(Level.WARNING, "Course not found for ID: {0}", id);
+            }
+            return course;
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error retrieving course for ID: {0}, Error: {1}", 
+                new Object[]{id, e.getMessage()});
+            return null;
+        } finally {
+            em.close();
+        }
+    }
+    
 }

@@ -13,23 +13,74 @@
 </head>
 <body>
     <jsp:include page="navbar.jsp" />
+    
+    <!-- Error Messages -->
+    <c:if test="${not empty error}">
+        <div class="alert alert-danger alert-dismissible fade show mx-auto mt-3" role="alert" style="max-width: 1200px;">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <strong>Error!</strong> ${error}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </c:if>
+    
     <div class="container mt-4">
-        <h2>Browse Courses</h2>
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold">Browse Courses</h1>
+            <p class="lead text-muted">Discover amazing courses and start your learning journey</p>
+        </div>
+        
         <div class="row">
             <c:forEach var="course" items="${courses}">
-                <div class="card m-2" style="width: 18rem;">
-                    <img src="${pageContext.request.contextPath}/img/${course.thumbnail}" class="card-img-top" alt="${course.name}">
-                    <div class="card-body">
-                        <h5 class="card-title">${course.name}</h5>
-                        <p class="card-text">${course.description}</p>
-                        <a href="${pageContext.request.contextPath}/lectures?courseId=${course.idCourse}" class="btn btn-info">
-                            <i class="fas fa-book-open"></i> View Course
-                        </a>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm border-0 course-card">
+                        <c:choose>
+                            <c:when test="${not empty course.image}">
+                                <img src="${pageContext.request.contextPath}/${course.image}" 
+                                     class="card-img-top" 
+                                     alt="${course.name}"
+                                     style="height: 200px; object-fit: cover;">
+                            </c:when>
+                            <c:otherwise>
+                                <div class="card-img-top d-flex align-items-center justify-content-center bg-light" 
+                                     style="height: 200px;">
+                                    <i class="bi bi-book text-muted" style="font-size: 3rem;"></i>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                        
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold">${course.name}</h5>
+                            <p class="card-text text-muted flex-grow-1">${course.description}</p>
+                            
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <small class="text-muted">
+                                        <i class="bi bi-play-circle me-1"></i>
+                                        ${course.lectureCount} lectures
+                                    </small>
+                                    <small class="text-success fw-bold">Free</small>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <a href="${pageContext.request.contextPath}/course?courseId=${course.idCourse}" 
+                                       class="btn btn-primary">
+                                        <i class="bi bi-eye me-2"></i>View Course
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </c:forEach>
+            
             <c:if test="${empty courses}">
-                <div class="alert alert-info mt-3">No courses available.</div>
+                <div class="col-12">
+                    <div class="text-center py-5">
+                        <i class="bi bi-book text-muted" style="font-size: 4rem;"></i>
+                        <h3 class="mt-3 text-muted">No courses available</h3>
+                        <p class="text-muted">Check back later for new courses!</p>
+                    </div>
+                </div>
             </c:if>
         </div>
     </div>

@@ -14,7 +14,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import model.Course;
 import model.User;
 
-@WebServlet(name = "StudentServlet", urlPatterns = {"/students"})
+@WebServlet(name = "StudentServlet", urlPatterns = {"/students", "/student", "/learners"})
 public class StudentServlet extends HttpServlet {
     private final CourseDAO courseDAO = new CourseDAO();
     private final StudentDAO studentDAO = new StudentDAO();
@@ -41,10 +41,10 @@ public class StudentServlet extends HttpServlet {
             request.setAttribute("selectedCourse", selectedCourse);
             request.setAttribute("students", students);
 
-            request.getRequestDispatcher("WEB-INF/jsp/studentList.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/studentList.jsp").forward(request, response);
         } catch (Exception e) {
             request.setAttribute("exception", e);
-            request.getRequestDispatcher("WEB-INF/jsp/studentList.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/studentList.jsp").forward(request, response);
         }
     }
 

@@ -13,18 +13,34 @@
     <!-- Font Awesome for Book Icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/homePage.css"/>
+    <link rel="stylesheet" href="css/homePage.css">
+    <!-- Alternative: Inline CSS for testing -->
+    <!-- <link rel="stylesheet" href="${pageContext.request.contextPath}/css/homePage.css"> -->
     <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <jsp:include page="/WEB_INF/jsp/navbar.jsp" />
+    <jsp:include page="navbar.jsp" />
 
     <!-- Main Content -->
+     <c:if test="${not empty sessionScope.username}">
+        <h1 class="fw-bold mb-3">Welcome Back, ${sessionScope.username}!</h1>
+    </c:if>
     <div class="container mt-4">
         <div class="row">
             <!-- Sidebar with Learning Roadmap -->
             <div class="col-md-3">
+                <c:if test="${empty sessionScope.username}">
+                <div class="sidebar card p-3">
+                    <h1 class="fw-bold mb-3">Welcome to LearnHub</h1>
+                    <p class="lead mb-4">
+                        Unlock your learning journey! Sign up or log in to access personalized courses, track your progress, and get AI-powered recommendations tailored just for you.
+                    </p>
+                    <a href="${pageContext.request.contextPath}/login" class="btn btn-primary btn-lg me-3">Login</a>
+                    <a href="${pageContext.request.contextPath}/register" class="btn btn-outline-primary btn-lg">Register</a>
+                </div></c:if>
+                
+                <c:if test="${not empty sessionScope.username}">
                 <div class="sidebar card p-3">
                     <h4>Learning Roadmap</h4>
                     <ul class="list-group">
@@ -45,7 +61,8 @@
                         </li>
                     </ul>
                     <a href="roadmap.jsp" class="btn btn-primary mt-3">View Full Roadmap</a>
-                </div>
+                </div></c:if>
+                
             </div>
 
             <!-- Course Section -->
@@ -61,25 +78,27 @@
                                 <img src="${pageContext.request.contextPath}/${course.image}" 
                                      class="card-img-top" 
                                      alt="${course.name}" 
-                                     onerror="this.src='https://via.placeholder.com/300x200';"
+                                     onerror="this.src=''"
                                      style="width: 100%; height: 200px; object-fit: cover;">
                                 <div class="card-body">
                                     <h5 class="card-title">${course.name}</h5>
                                     <p class="card-text">${course.description}</p>
-                                    <p class="card-lessons"><strong>Lessons:</strong> ${course.lectures.size()}</p>
-                                    <div class="progress progress-container">
-                                        <div class="progress-bar" role="progressbar" style="width: 50%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">50%</div>
-                                    </div>
+                                    <p class="card-lessons"><strong>Lessons:</strong> ${course.lectureCount}</p>
+    
                                     <c:if test="${not empty sessionScope.username}">
-                                        <a href="course${course.idCourse}.jsp" class="btn btn-primary mt-2">Start Learning</a>
+                                        <div class="progress progress-container">
+                                            <div class="progress-bar" role="progressbar" style="width: 50%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">50%</div>
+                                        </div>
+                                        <a href="${pageContext.request.contextPath}/course?courseId=${course.idCourse}" class="btn btn-primary mt-2">View Course</a>
                                     </c:if>
                                     <c:if test="${empty sessionScope.username}">
-                                        <a href="${pageContext.request.contextPath}/WEB_INF/jsp/login.jsp" class="btn btn-secondary mt-2">Sign In to Start Learning</a>
+                                        <a href="${pageContext.request.contextPath}/course?courseId=${course.idCourse}" class="btn btn-secondary mt-2">View Course Details</a>
                                     </c:if>
                                 </div>
-                            </div>s
+                            </div>
                         </div>
                     </c:forEach>
+                </div>
                 </div>
             </div>
         </div>

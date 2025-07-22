@@ -165,8 +165,7 @@ public class User {
       this.school = value;
     }
 
-    public User orElseThrow(Object object) {
-      // TODO Auto-generated method stub
-      throw new UnsupportedOperationException("Unimplemented method 'orElseThrow'");
+    public String getFullName() {
+        return this.firstName + " " + this.lastName;
     }
 }

@@ -13,7 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import model.Course;
 import model.Lecture;
 
-@WebServlet(name = "LectureServlet", urlPatterns = {"/lectures"})
+@WebServlet(name = "LectureServlet", urlPatterns = {"/lectures", "/lecture", "/videos"})
 public class LectureServlet extends HttpServlet {
     private final LectureDAO lectureDAO = new LectureDAO();
     private final CourseDAO courseDAO = new CourseDAO();
@@ -43,7 +43,7 @@ public class LectureServlet extends HttpServlet {
         request.setAttribute("lectures", lectures);
         request.setAttribute("role", role);
         request.setAttribute("courseId", courseId);
-        request.getRequestDispatcher("WEB-INF/jsp/lectureDetail.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/lectureDetail.jsp").forward(request, response);
     }
 
     @Override

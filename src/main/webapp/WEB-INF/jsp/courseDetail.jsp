@@ -1,128 +1,226 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@ page import="DAO.UserDAO,DAO.CourseDAO, Model.Course, Model.User, java.util.List" %>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%
-    String username = (String) session.getAttribute("username");
-    String role = (String) session.getAttribute("role");
-    UserDAO userDAO = new UserDAO();
-    CourseDAO courseDAO = new CourseDAO();
-    User user = userDAO.findByUsername(username);
-    List<Course> myCourses = courseDAO.getCoursesByTeacherId(user.getId());
-%>
-
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Add Course</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${course.name} - Course Details</title>
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/coursePage.css"/>
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/homePage.css">
 </head>
 <body>
-    <jsp:include page="/WEB-INF/jsp/navbar.jsp" />
-<div class="container mt-4">
+    <jsp:include page="navbar.jsp" />
+    
+    <!-- Success/Error Messages -->
     <c:if test="${not empty error}">
-        <div class="alert alert-danger">${error}</div>
+        <div class="alert alert-danger alert-dismissible fade show mx-auto mt-3" role="alert" style="max-width: 800px;">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <strong>Error!</strong> ${error}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     </c:if>
-    <c:if test="${not empty success}">
-        <div class="alert alert-success">${success}</div>
+    <c:if test="${param.message == 'enrolled_successfully'}">
+        <div class="alert alert-success alert-dismissible fade show mx-auto mt-3" role="alert" style="max-width: 800px;">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <strong>Success!</strong> You have been successfully enrolled in this course.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     </c:if>
-    <h2>Your Courses</h2>
-    <button class="btn btn-toggle-form" onclick="toggleForm()">Add Course</button>
-
-    <!-- Add form -->
-    <div id="addCourseForm" class="card p-3 mb-4" style="display: none;">
-        <form action="${pageContext.request.contextPath}/courses" method="post" enctype="multipart/form-data">
-            <input type="hidden" name="teacher_id" value="<%= user.getId() %>">
-            <div class="mb-3">
-                <label>Course Name</label>
-                <input type="text" class="form-control" name="name" required>
+    <c:if test="${param.message == 'already_enrolled'}">
+        <div class="alert alert-info alert-dismissible fade show mx-auto mt-3" role="alert" style="max-width: 800px;">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            <strong>Info:</strong> You are already enrolled in this course.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </c:if>
+    
+    <div class="container mt-5">
+        <div class="row">
+            <!-- Course Information Section -->
+            <div class="col-md-6">
+                <h1 class="display-4 fw-bold mb-3">${course.name}</h1>
+                
+                <div class="mb-4">
+                    <h5 class="text-muted">
+                        <i class="bi bi-person-fill me-2"></i>
+                        Instructor: ${course.teacherName}
+                    </h5>
+                </div>
+                
+                <div class="mb-4">
+                    <h6 class="fw-bold mb-3">Course Description</h6>
+                    <p class="lead text-muted">${course.description}</p>
+                </div>
+                
+                <div class="mb-4">
+                    <h6 class="fw-bold mb-3">Course Details</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="bi bi-play-circle-fill me-2 text-primary"></i>
+                            <strong>Total Lectures:</strong> ${course.lectureCount}
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-clock-fill me-2 text-success"></i>
+                            <strong>Duration:</strong> Self-paced
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-award-fill me-2 text-warning"></i>
+                            <strong>Certificate:</strong> Available upon completion
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Enrollment Button -->
+                <div class="d-grid gap-2">
+                    <c:choose>
+                        <c:when test="${empty sessionScope.username}">
+                            <!-- Not logged in - Sign In to Start Learning -->
+                            <a href="${pageContext.request.contextPath}/login" class="btn btn-primary btn-lg">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>
+                                Sign In to Start Learning
+                            </a>
+                        </c:when>
+                        <c:when test="${enrolled}">
+                            <!-- Logged in and enrolled - Continue Learning -->
+                            <a href="${pageContext.request.contextPath}/lectures?courseId=${course.idCourse}" class="btn btn-success btn-lg">
+                                <i class="bi bi-play-fill me-2"></i>
+                                Continue Learning
+                            </a>
+                        </c:when>
+                        <c:otherwise>
+                            <!-- Logged in but not enrolled - Enroll Button -->
+                            <form action="${pageContext.request.contextPath}/course" method="post" class="d-inline">
+                                <input type="hidden" name="action" value="enroll">
+                                <input type="hidden" name="courseId" value="${course.idCourse}">
+                                <button type="submit" class="btn btn-primary btn-lg w-100">
+                                    <i class="bi bi-bookmark-plus-fill me-2"></i>
+                                    Enroll Now (Free)
+                                </button>
+                            </form>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
             </div>
-            <div class="mb-3">
-                <label>Description</label>
-                <textarea class="form-control" name="description" required></textarea>
+            
+            <!-- Course Cover Image Section -->
+            <div class="col-md-6">
+                <div class="card shadow-lg border-0">
+                    <div class="position-relative">
+                        <c:choose>
+                            <c:when test="${not empty course.image}">
+                                <img src="${pageContext.request.contextPath}/${course.image}" 
+                                     class="card-img-top" 
+                                     alt="${course.name}"
+                                     style="height: 400px; object-fit: cover;">
+                            </c:when>
+                            <c:otherwise>
+                                <div class="card-img-top d-flex align-items-center justify-content-center bg-light" 
+                                     style="height: 400px;">
+                                    <div class="text-center text-muted">
+                                        <i class="bi bi-image" style="font-size: 4rem;"></i>
+                                        <p class="mt-3 fs-5">Course Cover Image</p>
+                                    </div>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                        
+                        <!-- Play button overlay for preview -->
+                        <div class="position-absolute top-50 start-50 translate-middle">
+                            <button class="btn btn-light btn-lg rounded-circle shadow" 
+                                    style="width: 80px; height: 80px; opacity: 0.9;">
+                                <i class="bi bi-play-fill fs-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Course Stats -->
+                <div class="row mt-4">
+                    <div class="col-4 text-center">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title text-primary">${course.lectureCount}</h5>
+                                <p class="card-text text-muted small">Lectures</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4 text-center">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title text-success">∞</h5>
+                                <p class="card-text text-muted small">Lifetime Access</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4 text-center">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title text-warning">★ 4.8</h5>
+                                <p class="card-text text-muted small">Rating</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="mb-3">
-                <label>Image Course</label>
-                <input type="file" class="form-control" name="image" accept="image/*" required>
+        </div>
+        
+        <!-- Course Curriculum Section -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <h3 class="fw-bold mb-4">Course Curriculum</h3>
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <c:choose>
+                            <c:when test="${not empty lectures}">
+                                <div class="accordion" id="curriculumAccordion">
+                                    <c:forEach var="lecture" items="${lectures}" varStatus="status">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="heading${status.index}">
+                                                <button class="accordion-button collapsed" type="button" 
+                                                        data-bs-toggle="collapse" 
+                                                        data-bs-target="#collapse${status.index}" 
+                                                        aria-expanded="false" 
+                                                        aria-controls="collapse${status.index}">
+                                                    <i class="bi bi-play-circle me-3"></i>
+                                                    ${lecture.title}
+                                                    <span class="badge bg-primary ms-auto me-3">Lecture ${status.index + 1}</span>
+                                                </button>
+                                            </h2>
+                                            <div id="collapse${status.index}" 
+                                                 class="accordion-collapse collapse" 
+                                                 aria-labelledby="heading${status.index}" 
+                                                 data-bs-parent="#curriculumAccordion">
+                                                <div class="accordion-body">
+                                                    <p class="text-muted">${lecture.content}</p>
+                                                    <small class="text-success">
+                                                        <i class="bi bi-unlock-fill me-1"></i>
+                                                        Available after enrollment
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </c:forEach>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <div class="text-center text-muted py-5">
+                                    <i class="bi bi-book" style="font-size: 3rem;"></i>
+                                    <p class="mt-3">Course curriculum will be available soon.</p>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                </div>
             </div>
-            <button type="submit" class="btn btn-primary">Save</button>
-        </form>
+        </div>
     </div>
-           
-    <!-- Course list -->
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Num</th><th>Name</th><th>Description</th><th>Image Course(url)</th><th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-        <c:forEach var="c" items="<%= myCourses %>" varStatus="i">
-            <tr class="table table-child">
-                <td>${i.index + 1}</td>
-                <td>${c.name}</td>
-                <td>${c.description}</td>
-                <td>${c.image}</td>
-                <td>
-                    <button class="btn btn-warning btn-sm" onclick="openEditModal(${c.idCourse}, '${c.name}', '${c.description}', '${c.image}')">Edit</button>
-                    <form action="${pageContext.request.contextPath}/deleteControl" method="post" style="display:inline;">
-                        <input type="hidden" name="id" value="${c.idCourse}">
-                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
-                    </form>
-                </td>
-            </tr>
-        </c:forEach>
-        </tbody>
-    </table>
-</div>
-
-<!-- Modal for edit -->
-<div class="modal fade" id="editModal" tabindex="-1">
-    <div class="modal-dialog">
-        <form action="${pageContext.request.contextPath}/editControl" method="post" class="modal-content" enctype="multipart/form-data">
-            <input type="hidden" name="id" id="editId">
-            <input type="hidden" name="currentImage" id="editCurrentImage">
-            <div class="modal-header">
-                <h5 class="modal-title">Edit Course</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label>Course Name</label>
-                    <input type="text" class="form-control" name="name" id="editName" required>
-                </div>
-                <div class="mb-3">
-                    <label>Description</label>
-                    <textarea class="form-control" name="description" id="editDescription" required></textarea>
-                </div>
-                <div class="mb-3">
-                    <label>Image Course (leave blank to keep current image)</label>
-                    <input type="file" class="form-control" name="image" id="editImage" accept="image/*">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="submit" class="btn btn-primary">Save Changes</button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<script>
-function toggleForm() {
-    const form = document.getElementById('addCourseForm');
-    form.style.display = (form.style.display === 'none') ? 'block' : 'none';
-}
-
-function openEditModal(id, name, description, image) {
-    document.getElementById('editId').value = id;
-    document.getElementById('editName').value = name;
-    document.getElementById('editDescription').value = description;
-    document.getElementById('editCurrentImage').value = image;
-    new bootstrap.Modal(document.getElementById('editModal')).show();
-}
-</script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

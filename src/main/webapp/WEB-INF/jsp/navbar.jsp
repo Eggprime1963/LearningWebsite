@@ -38,49 +38,65 @@
                     <ul class="navbar-nav mx-auto">
                        
                         <% String role = (String) session.getAttribute("role"); %>
+                        <% String username = (String) session.getAttribute("username"); %>
                         <% if ("teacher".equals(role)) { %>  
                             <li class="nav-item">
                             <a class="nav-link active" href="${pageContext.request.contextPath}/home">Home</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="${pageContext.request.contextPath}/WEB-INF/jsp/contentDashboard.jsp">Course List </a>
+                                <a class="nav-link" href="${pageContext.request.contextPath}/course">Manage Courses</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="${pageContext.request.contextPath}/view/gradeAssignments.jsp">Grade Assignments</a>
+                                <a class="nav-link" href="${pageContext.request.contextPath}/gradeAssignments">Grade Assignments</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="${pageContext.request.contextPath}/view/studentList.jsp">Student List</a>
+                                <a class="nav-link" href="${pageContext.request.contextPath}/studentList">Student List</a>
                             </li>
                         <% } else if("student".equals(role)) { %>
                              <li class="nav-item">
                             <a class="nav-link active" href="${pageContext.request.contextPath}/home">Home</a>
                             </li> 
                             <li class="nav-item">
-                                <a class="nav-link" href="${pageContext.request.contextPath}/view/myCourse.jsp">Courses</a>
+                                <a class="nav-link" href="${pageContext.request.contextPath}/myClassroom">My Courses</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="#">Roadmap</a>
+                                <a class="nav-link" href="${pageContext.request.contextPath}/browse">Browse Courses</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="#">Practice</a>
+                            </li>
+                        <% } else if (username != null) { %>
+                            <!-- For logged in users without specific roles -->
+                            <li class="nav-item">
+                                <a class="nav-link active" href="${pageContext.request.contextPath}/home">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="${pageContext.request.contextPath}/browse">Browse Courses</a>
+                            </li>
+                        <% } else { %>
+                            <!-- For non-logged in users -->
+                            <li class="nav-item">
+                                <a class="nav-link active" href="${pageContext.request.contextPath}/home">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="${pageContext.request.contextPath}/browse">Browse Courses</a>
                             </li>
                         <% } %>
                     </ul>
                     <!-- User Profile, Sign In, Sign Up, Logout, and Theme Toggle -->
                     <div class="d-flex align-items-center">
-                        <% if (session.getAttribute("username") == null) { %>
-                            <a href="${pageContext.request.contextPath}/loginServlet" class="btn btn-outline-primary me-2">Sign In</a>
+                        <% if (username == null) { %>
+                            <a href="${pageContext.request.contextPath}/login" class="btn btn-outline-primary me-2">Sign In</a>
                             <a href="${pageContext.request.contextPath}/register" class="btn btn-outline-success me-2">Sign Up</a>
                         <% } else { %>
                             <div class="user-icon position-relative">
-                                <button class="btn btn-outline-primary me-2" style="border: none; background: none;">
-                                    <i class="bi bi-person-circle"></i>
+                                <button class="btn btn-outline-primary me-2 dropdown-toggle" style="border: none; background: none;" data-bs-toggle="dropdown" aria-expanded="false">
                                 </button>
-                                <div class="dropdown-menu">
-                                    <a href="${pageContext.request.contextPath}/view/profile.jsp"><i class="bi bi-person-fill me-2"></i>Profile</a>
-                                   
-                                    <a href="${pageContext.request.contextPath}/view/logOut.jsp"><i class="bi bi-box-arrow-right me-2"></i>Logout</a>
-                                </div>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="${pageContext.request.contextPath}/profile"><i class="bi bi-person-fill me-2"></i>Profile</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="${pageContext.request.contextPath}/logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                                </ul>
                             </div>
                         <% } %>
                         <button id="theme-toggle" class="btn btn-outline-secondary" title="Toggle Theme">

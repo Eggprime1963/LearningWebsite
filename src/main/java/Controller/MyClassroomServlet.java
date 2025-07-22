@@ -16,7 +16,7 @@ import model.Course;
 import model.Lecture;
 
 
-@WebServlet("/myClassroom")
+@WebServlet(name = "MyClassroomServlet", urlPatterns = {"/myClassroom", "/classroom", "/my-courses"})
 public class MyClassroomServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -61,15 +61,15 @@ public class MyClassroomServlet extends HttpServlet {
             }
 
             if ("assignments".equals(section) && courseId != 0) {
-                List<Assignment> assignments = new AssignmentDAO().getAssignmentsByCourse(courseId);
+                List<Assignment> assignments = new AssignmentDAO().getAssignmentsByCourseId(courseId);
                 request.setAttribute("assignments", assignments);
             } else if ("lectures".equals(section) && courseId != 0) {
-                List<Lecture> lectures = new LectureDAO().getLecturesByCourse(courseId);
+                List<Lecture> lectures = new LectureDAO().getLecturesByCourseId(courseId);
                 request.setAttribute("lectures", lectures);
             }
         }
 
-        request.getRequestDispatcher("WEB-INF/jsp/myClassroom.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/myClassroom.jsp").forward(request, response);
     }
 
     private int getCurrentUserId(HttpServletRequest request) throws ServletException {

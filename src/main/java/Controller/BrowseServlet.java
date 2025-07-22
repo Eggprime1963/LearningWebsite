@@ -11,7 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.Course;
 
-@WebServlet(name = "BrowseServlet", urlPatterns = {"/browse"})
+@WebServlet(name = "BrowseServlet", urlPatterns = {"/browse", "/explore", "/catalog"})
 public class BrowseServlet extends HttpServlet {
     private CourseDAO courseDAO = new CourseDAO();
 

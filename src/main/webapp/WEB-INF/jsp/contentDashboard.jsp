@@ -17,6 +17,23 @@
 
 
     <div class="container mt-4">
+        <!-- Error Messages -->
+        <c:if test="${not empty error}">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>Error!</strong> ${error}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </c:if>
+        <!-- Success Messages -->
+        <c:if test="${not empty success}">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <strong>Success!</strong> ${success}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </c:if>
+        
         <h1 class="dashboard-title"> Content Dashboard</h1>
         <div class="row g-4">
             <!-- Add Course Card -->

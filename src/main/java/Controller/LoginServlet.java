@@ -39,7 +39,7 @@ public class LoginServlet extends HttpServlet {
             request.setAttribute("message", "No active session found.");
         }
 
-        request.getRequestDispatcher("WEB-INF/jsp/login.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/jsp/login.jsp").forward(request, response);
     }
 
     @Override
@@ -74,6 +74,7 @@ public class LoginServlet extends HttpServlet {
             if (userOpt.isPresent()) {
                 User user = userOpt.get();
                 session.setAttribute("user", user);
+                session.setAttribute("username", user.getUsername());
                 session.setAttribute("role", user.getRole());
                 session.setAttribute("id", user.getId());
                 out.print("{\"success\":true,\"redirect\":\"" + request.getContextPath() + "/home\"}");
@@ -95,7 +96,7 @@ public class LoginServlet extends HttpServlet {
 
         if (username == null || password == null) {
             request.setAttribute("message", "Username and password are required.");
-            request.getRequestDispatcher("WEB-INF/jsp/login.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/login.jsp").forward(request, response);
             return;
         }
 
@@ -103,11 +104,12 @@ public class LoginServlet extends HttpServlet {
         if (userOpt.isPresent()) {
             User user = userOpt.get();
             session.setAttribute("user", user);
+            session.setAttribute("username", user.getUsername());
             session.setAttribute("role", user.getRole());
             response.sendRedirect(request.getContextPath() + "/home");
         } else {
             request.setAttribute("message", "Invalid email or password.");
-            request.getRequestDispatcher("WEB-INF/jsp/login.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/login.jsp").forward(request, response);
         }
     }
 }
