@@ -81,9 +81,26 @@ public class EnrollmentDAO {
     public List<Enrollment> findByCourseId(int courseId) {
         EntityManager em = JPAUtil.getEntityManager();
         try {
-            TypedQuery<Enrollment> query = em.createQuery("SELECT e FROM Enrollment e WHERE e.course.id = :courseId", Enrollment.class);
+            TypedQuery<Enrollment> query = em.createQuery("SELECT e FROM Enrollment e WHERE e.course.idCourse = :courseId", Enrollment.class);
             query.setParameter("courseId", courseId);
             return query.getResultList();
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error finding enrollments by course ID: " + courseId, e);
+            return Collections.emptyList();
+        } finally {
+            em.close();
+        }
+    }
+
+    public List<Enrollment> getEnrollmentsByStudentId(int studentId) {
+        EntityManager em = JPAUtil.getEntityManager();
+        try {
+            TypedQuery<Enrollment> query = em.createQuery("SELECT e FROM Enrollment e WHERE e.student.id = :studentId", Enrollment.class);
+            query.setParameter("studentId", studentId);
+            return query.getResultList();
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error finding enrollments by student ID: " + studentId, e);
+            return Collections.emptyList();
         } finally {
             em.close();
         }

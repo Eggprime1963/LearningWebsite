@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -45,7 +46,7 @@
                                        class="text-decoration-none ${lectureItem.id == lecture.id ? 'text-white' : 'text-dark'}">
                                         <div class="d-flex align-items-center">
                                             <i class="bi bi-play-circle me-2"></i>
-                                            <span class="small">${lectureItem.name}</span>
+                                            <span class="small">${lectureItem.title}</span>
                                         </div>
                                     </a>
                                 </li>
@@ -66,7 +67,7 @@
                                        class="text-decoration-none text-dark">
                                         <div class="d-flex align-items-center">
                                             <i class="bi bi-file-earmark me-2"></i>
-                                            <span class="small">${assignment.name}</span>
+                                            <span class="small">${assignment.title}</span>
                                         </div>
                                     </a>
                                 </li>
@@ -91,10 +92,35 @@
                             <div class="position-relative">
                                 <c:choose>
                                     <c:when test="${not empty lecture.videoUrl}">
-                                        <video class="w-100" controls style="height: 400px; object-fit: cover;">
-                                            <source src="${lecture.videoUrl}" type="video/mp4">
-                                            Your browser does not support the video tag.
-                                        </video>
+                                        <c:choose>
+                                            <c:when test="${fn:contains(lecture.videoUrl, 'youtube.com/watch') or fn:contains(lecture.videoUrl, 'youtu.be/')}">
+                                                <!-- YouTube Video Player -->
+                                                <div class="ratio ratio-16x9">
+                                                    <c:choose>
+                                                        <c:when test="${not empty embedUrl}">
+                                                            <iframe src="${embedUrl}" 
+                                                                    title="${lecture.title}" 
+                                                                    allowfullscreen>
+                                                            </iframe>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <c:set var="embedUrl" value="${fn:replace(lecture.videoUrl, 'watch?v=', 'embed/')}" />
+                                                            <iframe src="${embedUrl}" 
+                                                                    title="${lecture.title}" 
+                                                                    allowfullscreen>
+                                                            </iframe>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </div>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <!-- Regular MP4 Video Player -->
+                                                <video class="w-100" controls style="height: 400px; object-fit: cover;">
+                                                    <source src="${lecture.videoUrl}" type="video/mp4">
+                                                    Your browser does not support the video tag.
+                                                </video>
+                                            </c:otherwise>
+                                        </c:choose>
                                     </c:when>
                                     <c:otherwise>
                                         <div class="card-img-top d-flex align-items-center justify-content-center bg-dark text-white" 
@@ -193,7 +219,7 @@
                                     <div class="col-md-6 mb-3">
                                         <div class="card border-0 shadow-sm">
                                             <div class="card-body">
-                                                <h6 class="card-title">${assignment.name}</h6>
+                                                <h6 class="card-title">${assignment.title}</h6>
                                                 <p class="card-text text-muted small">${assignment.description}</p>
                                                 <a href="${pageContext.request.contextPath}/assignments?assignmentId=${assignment.id}" 
                                                    class="btn btn-outline-primary btn-sm">

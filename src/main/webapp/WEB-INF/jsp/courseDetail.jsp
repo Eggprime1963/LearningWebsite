@@ -197,10 +197,21 @@
                                                  data-bs-parent="#curriculumAccordion">
                                                 <div class="accordion-body">
                                                     <p class="text-muted">${lecture.content}</p>
-                                                    <small class="text-success">
-                                                        <i class="bi bi-unlock-fill me-1"></i>
-                                                        Available after enrollment
-                                                    </small>
+                                                    <c:choose>
+                                                        <c:when test="${enrolled}">
+                                                            <a href="${pageContext.request.contextPath}/lectures?courseId=${course.idCourse}&lectureId=${lecture.id}" 
+                                                               class="btn btn-primary btn-sm">
+                                                                <i class="bi bi-play-fill me-1"></i>
+                                                                Watch Lecture
+                                                            </a>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <small class="text-success">
+                                                                <i class="bi bi-unlock-fill me-1"></i>
+                                                                Available after enrollment
+                                                            </small>
+                                                        </c:otherwise>
+                                                    </c:choose>
                                                 </div>
                                             </div>
                                         </div>
@@ -216,11 +227,160 @@
                         </c:choose>
                     </div>
                 </div>
-            </div>
         </div>
     </div>
     
+    <!-- Include AI Chatbot Widget -->
+    <jsp:include page="chatbotWidget.jsp" />
+    
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Enhanced Course Detail JavaScript -->
+    <script>
+        // Course data from server
+        var courseEnrolled = <c:out value="${enrolled}" default="false" />;
+        var userLoggedIn = <c:out value="${not empty sessionScope.username}" default="false" />;
+        var courseName = '<c:out value="${course.name}" />';
+        var courseId = '<c:out value="${course.idCourse}" />';
+        var instructorName = '<c:out value="${course.teacherName}" />';
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Enhanced course preview functionality
+            const playButton = document.querySelector('.btn-light.rounded-circle');
+            if (playButton) {
+                playButton.addEventListener('click', function() {
+                    if (courseEnrolled) {
+                        window.location.href = '${pageContext.request.contextPath}/lectures?courseId=${course.idCourse}';
+                    } else {
+                        // Show enrollment prompt
+                        if (confirm('You need to enroll in this course to access the lectures. Would you like to enroll now?')) {
+                            if (userLoggedIn) {
+                                const enrollForm = document.querySelector('form[action*="course"] button[type="submit"]');
+                                if (enrollForm) enrollForm.click();
+                            } else {
+                                window.location.href = '${pageContext.request.contextPath}/login';
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Course-specific AI assistance
+            if (typeof window.aiChatWidget !== 'undefined') {
+                // Add course context to AI chatbot
+                window.aiChatWidget.courseContext = {
+                    courseName: courseName,
+                    courseId: courseId,
+                    instructor: instructorName,
+                    enrolled: courseEnrolled
+                };
+                
+                // Show course-specific AI suggestions
+                setTimeout(function() {
+                    if (!sessionStorage.getItem('courseAISuggestionSeen_' + courseId)) {
+                        showCourseAISuggestion();
+                        sessionStorage.setItem('courseAISuggestionSeen_' + courseId, 'true');
+                    }
+                }, 2000);
+            }
+        });
+        
+        function showCourseAISuggestion() {
+            const suggestion = document.createElement('div');
+            suggestion.className = 'course-ai-suggestion';
+            suggestion.innerHTML = 
+                '<div class="alert alert-info alert-dismissible fade show position-fixed" ' +
+                'style="bottom: 120px; right: 20px; z-index: 1055; max-width: 320px;">' +
+                '<div class="d-flex align-items-start">' +
+                '<i class="bi bi-lightbulb text-primary me-2 mt-1"></i>' +
+                '<div>' +
+                '<strong>AI Course Assistant</strong><br>' +
+                '<small>Ask me anything about "' + courseName + '" - course content, prerequisites, or learning tips!</small>' +
+                '</div>' +
+                '</div>' +
+                '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
+                '</div>';
+            
+            document.body.appendChild(suggestion);
+            
+            // Auto-remove after 8 seconds
+            setTimeout(function() {
+                const alert = suggestion.querySelector('.alert');
+                if (alert) {
+                    bootstrap.Alert.getOrCreateInstance(alert).close();
+                }
+            }, 8000);
+        }
+    </script>
+    
+    <!-- Course Detail Specific Styling -->
+    <style>
+        .course-ai-suggestion {
+            animation: slideInFromRight 0.6s ease-out;
+        }
+        
+        .course-ai-suggestion .alert {
+            border-left: 4px solid #0d6efd;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .position-relative .btn.rounded-circle {
+            transition: all 0.3s ease;
+        }
+        
+        .position-relative .btn.rounded-circle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        
+        .accordion-button {
+            transition: all 0.2s ease;
+        }
+        
+        .accordion-button:not(.collapsed) {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+        
+        .accordion-button:focus {
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        
+        @keyframes slideInFromRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        /* Enhanced course stats cards */
+        .card.border-0.shadow-sm {
+            transition: all 0.3s ease;
+        }
+        
+        .card.border-0.shadow-sm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+        }
+        
+        /* Responsive improvements */
+        @media (max-width: 768px) {
+            .course-ai-suggestion .alert {
+                bottom: 80px !important;
+                right: 10px !important;
+                left: 10px !important;
+                max-width: none !important;
+            }
+            
+            .display-4 {
+                font-size: 2rem;
+            }
+        }
+    </style>
 </body>
 </html>

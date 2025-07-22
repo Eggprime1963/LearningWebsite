@@ -23,8 +23,11 @@ public class LectureDAO {
             transaction.commit();
             return lecture;
         } catch (Exception e) {
-            if (transaction.isActive()) transaction.rollback();
-            throw new RuntimeException("Could not save lecture", e);
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+            logger.log(Level.SEVERE, "Error saving lecture", e);
+            throw e;
         } finally {
             em.close();
         }
@@ -38,8 +41,11 @@ public class LectureDAO {
             em.merge(lecture);
             transaction.commit();
         } catch (Exception e) {
-            if (transaction.isActive()) transaction.rollback();
-            throw new RuntimeException("Could not update lecture", e);
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+            logger.log(Level.SEVERE, "Error updating lecture", e);
+            throw e;
         } finally {
             em.close();
         }
@@ -48,7 +54,11 @@ public class LectureDAO {
     public Optional<Lecture> findLectureById(int lectureId) {
         EntityManager em = JPAUtil.getEntityManager();
         try {
-            return Optional.ofNullable(em.find(Lecture.class, lectureId));
+            Lecture lecture = em.find(Lecture.class, lectureId);
+            return Optional.ofNullable(lecture);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error finding lecture with ID: " + lectureId, e);
+            return Optional.empty();
         } finally {
             em.close();
         }
@@ -65,8 +75,11 @@ public class LectureDAO {
             }
             transaction.commit();
         } catch (Exception e) {
-            if (transaction.isActive()) transaction.rollback();
-            throw new RuntimeException("Could not delete lecture", e);
+            if (transaction.isActive()) {
+                transaction.rollback();
+            }
+            logger.log(Level.SEVERE, "Error deleting lecture with ID: " + lectureId, e);
+            throw e;
         } finally {
             em.close();
         }
@@ -76,7 +89,7 @@ public class LectureDAO {
         EntityManager em = JPAUtil.getEntityManager();
         try {
             TypedQuery<Lecture> query = em.createQuery(
-                "SELECT l FROM Lecture l WHERE l.course.idCourse = :courseId AND l.status = 'active'",
+                "SELECT l FROM Lecture l WHERE l.course.idCourse = :courseId ORDER BY l.id ASC",
                 Lecture.class
             );
             query.setParameter("courseId", courseId);
@@ -93,7 +106,7 @@ public class LectureDAO {
         EntityManager em = JPAUtil.getEntityManager();
         try {
             TypedQuery<Lecture> query = em.createQuery(
-                "SELECT l FROM Lecture l WHERE l.course.idCourse = :courseId AND l.course.teacherId = :teacherId AND l.status = 'active'",
+                "SELECT l FROM Lecture l WHERE l.course.idCourse = :courseId AND l.course.idTeacher = :teacherId ORDER BY l.id ASC",
                 Lecture.class
             );
             query.setParameter("courseId", courseId);
@@ -111,7 +124,7 @@ public class LectureDAO {
         EntityManager em = JPAUtil.getEntityManager();
         try {
             TypedQuery<Lecture> query = em.createQuery(
-                "SELECT l FROM Lecture l JOIN l.course.enrollments e WHERE l.course.idCourse = :courseId AND e.student.idUser = :studentId AND l.status = 'active'",
+                "SELECT l FROM Lecture l JOIN l.course.enrollments e WHERE l.course.idCourse = :courseId AND e.student.id = :studentId AND l.status = 'active' ORDER BY l.id ASC",
                 Lecture.class
             );
             query.setParameter("courseId", courseId);
@@ -123,22 +136,31 @@ public class LectureDAO {
         } finally {
             em.close();
         }
-        
     }
+
     public Lecture getLectureById(int id) {
         EntityManager em = JPAUtil.getEntityManager();
         try {
-            Lecture lecture = em.find(Lecture.class, id);
-            if (lecture != null) {
-                logger.log(Level.INFO, "Found lecture with ID: {0}", id);
-            } else {
-                logger.log(Level.WARNING, "Lecture not found for ID: {0}", id);
-            }
-            return lecture;
+            return em.find(Lecture.class, id);
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error retrieving lecture for ID: {0}, Error: {1}", 
-                new Object[]{id, e.getMessage()});
+            logger.log(Level.SEVERE, "Error retrieving lecture with ID: " + id, e);
             return null;
+        } finally {
+            em.close();
+        }
+    }
+
+    public List<Lecture> getAllLectures() {
+        EntityManager em = JPAUtil.getEntityManager();
+        try {
+            TypedQuery<Lecture> query = em.createQuery(
+                "SELECT l FROM Lecture l ORDER BY l.course.idCourse, l.id",
+                Lecture.class
+            );
+            return query.getResultList();
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error retrieving all lectures", e);
+            return Collections.emptyList();
         } finally {
             em.close();
         }
