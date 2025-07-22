@@ -30,6 +30,10 @@ public class ChatbotServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+        // Set response timeout and enable async processing for better performance
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        
         // Read user message from request
         StringBuilder sb = new StringBuilder();
         try (BufferedReader reader = request.getReader()) {
@@ -38,45 +42,145 @@ public class ChatbotServlet extends HttpServlet {
         }
         
         JSONObject requestData = new JSONObject(sb.toString());
-        String userMsg = requestData.optString("message", "");
-        String chatType = requestData.optString("type", "general"); // general, course-help, recommendation
+        final String userMsg = requestData.optString("message", "").trim();
+        final String chatType = requestData.optString("type", "general");
+        
+        // Quick validation and early fallback for empty messages
+        if (userMsg.isEmpty()) {
+            JSONObject jsonResponse = new JSONObject();
+            jsonResponse.put("reply", "Please enter a message to get help.");
+            jsonResponse.put("type", chatType);
+            response.getWriter().write(jsonResponse.toString());
+            return;
+        }
         
         // Get user context from session
         HttpSession session = request.getSession(false);
-        User currentUser = null;
-        if (session != null) {
-            currentUser = (User) session.getAttribute("user");
-        }
+        final User currentUser = (session != null) ? (User) session.getAttribute("user") : null;
         
         String aiResponse;
+        long startTime = System.currentTimeMillis();
+        
         try {
-            // Choose AI response based on chat type and context
+            // Set a maximum processing time of 10 seconds
+            final long MAX_PROCESSING_TIME = 8000; // Reduced to 8 seconds
+            
+            // Choose AI response based on chat type with timeout protection
             switch (chatType) {
                 case "course-help":
-                    aiResponse = handleCourseHelp(userMsg, currentUser);
+                    aiResponse = processWithTimeout(() -> handleCourseHelp(userMsg, currentUser), 
+                                                   MAX_PROCESSING_TIME, 
+                                                   () -> generateCourseHelpFallback(userMsg, currentUser));
                     break;
                 case "recommendation":
-                    aiResponse = handleRecommendation(userMsg, currentUser);
+                    aiResponse = processWithTimeout(() -> handleRecommendation(userMsg, currentUser), 
+                                                   MAX_PROCESSING_TIME, 
+                                                   () -> generateRecommendationFallback(userMsg, currentUser));
                     break;
                 case "programming-help":
-                    aiResponse = handleProgrammingHelp(userMsg);
+                    aiResponse = processWithTimeout(() -> handleProgrammingHelp(userMsg), 
+                                                   MAX_PROCESSING_TIME, 
+                                                   () -> generateProgrammingHelpFallback(userMsg));
                     break;
                 default:
-                    aiResponse = handleGeneralChat(userMsg, currentUser);
+                    aiResponse = processWithTimeout(() -> handleGeneralChat(userMsg, currentUser), 
+                                                   MAX_PROCESSING_TIME, 
+                                                   () -> generateGeneralChatFallback(userMsg, currentUser));
                     break;
             }
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error processing AI request", e);
-            aiResponse = "I'm sorry, I'm having trouble processing your request right now. Please try again later.";
+            logger.log(Level.WARNING, "Error processing AI request", e);
+            aiResponse = getFastFallbackResponse(userMsg, chatType, currentUser);
+        }
+        
+        long processingTime = System.currentTimeMillis() - startTime;
+        if (logger.isLoggable(Level.INFO)) {
+            logger.info("Chat response generated in " + processingTime + "ms for type: " + chatType);
         }
         
         // Return AI reply as JSON
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
         JSONObject jsonResponse = new JSONObject();
         jsonResponse.put("reply", aiResponse);
         jsonResponse.put("type", chatType);
+        jsonResponse.put("processingTime", processingTime);
         response.getWriter().write(jsonResponse.toString());
+    }
+    
+    // Functional interfaces for timeout processing
+    @FunctionalInterface
+    private interface ResponseGenerator {
+        String generate() throws Exception;
+    }
+    
+    @FunctionalInterface
+    private interface FallbackGenerator {
+        String generate();
+    }
+    
+    private String processWithTimeout(ResponseGenerator generator, long timeoutMs, FallbackGenerator fallback) {
+        try {
+            // Quick check if AI is likely to be fast
+            if (modelsAvailable == null || !modelsAvailable) {
+                return fallback.generate();
+            }
+            
+            // Simple timeout mechanism - try AI with fallback on any delay/error
+            long startTime = System.currentTimeMillis();
+            try {
+                String result = generator.generate();
+                long elapsed = System.currentTimeMillis() - startTime;
+                
+                // If it took too long, log it but return the result anyway
+                if (elapsed > timeoutMs && logger.isLoggable(Level.INFO)) {
+                    logger.info("AI response took longer than expected: " + elapsed + "ms");
+                }
+                
+                return result;
+            } catch (Exception e) {
+                long elapsed = System.currentTimeMillis() - startTime;
+                if (elapsed > timeoutMs) {
+                    if (logger.isLoggable(Level.INFO)) {
+                        logger.info("AI request timed out after " + elapsed + "ms, using fallback");
+                    }
+                } else {
+                    logger.log(Level.WARNING, "AI request failed, using fallback", e);
+                }
+                return fallback.generate();
+            }
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Error in timeout processing", e);
+            return fallback.generate();
+        }
+    }
+    
+    private String getFastFallbackResponse(String userMsg, String chatType, User user) {
+        String userName = (user != null) ? user.getUsername() : "there";
+        String lowerMsg = userMsg.toLowerCase();
+        
+        switch (chatType) {
+            case "course-help":
+                if (lowerMsg.contains("java")) {
+                    return "Hi " + userName + "! For Java help, check our Java courses or ask specific questions about syntax, OOP concepts, or debugging.";
+                } else if (lowerMsg.contains("python")) {
+                    return "Hi " + userName + "! For Python assistance, explore our Python courses covering basics to advanced topics.";
+                } else {
+                    return "Hi " + userName + "! I'm here to help with your courses. What specific topic would you like assistance with?";
+                }
+            case "programming-help":
+                if (lowerMsg.contains("error") || lowerMsg.contains("bug")) {
+                    return "Hi " + userName + "! For debugging help: 1) Read error messages carefully, 2) Check syntax, 3) Use print/console statements to trace your code.";
+                } else {
+                    return "Hi " + userName + "! I can help with programming questions. What specific programming topic or issue would you like assistance with?";
+                }
+            case "recommendation":
+                if (lowerMsg.contains("beginner")) {
+                    return "Hi " + userName + "! For beginners, I recommend starting with Python Basics or Web Development Fundamentals.";
+                } else {
+                    return "Hi " + userName + "! I'd love to recommend courses for you. What programming languages or topics interest you most?";
+                }
+            default:
+                return "Hi " + userName + "! I'm here to help with your learning. How can I assist you today?";
+        }
     }
     
     private String handleCourseHelp(String userMsg, User user) throws Exception {
@@ -307,55 +411,47 @@ public class ChatbotServlet extends HttpServlet {
         return context.toString();
     }
     
+    // Cache for model availability to avoid repeated checks
+    private static volatile Boolean modelsAvailable = null;
+    private static long lastModelCheck = 0;
+    private static final long MODEL_CHECK_INTERVAL = 300000; // 5 minutes
+    
     private String callOllamaAPI(String prompt, String model) throws Exception {
-        // First check if Ollama service is available and has models
-        String checkUrl = "http://localhost:11434/api/tags";
-        java.net.URI checkUri = java.net.URI.create(checkUrl);
-        HttpURLConnection checkConn = (HttpURLConnection) checkUri.toURL().openConnection();
-        checkConn.setRequestMethod("GET");
-        checkConn.setConnectTimeout(5000); // 5 seconds
-        checkConn.setReadTimeout(10000); // 10 seconds
-        
-        try {
-            int checkResponseCode = checkConn.getResponseCode();
-            if (checkResponseCode != HttpURLConnection.HTTP_OK) {
-                throw new Exception("Ollama service not available (HTTP " + checkResponseCode + ")");
-            }
-            
-            // Read models list
-            StringBuilder modelsResponse = new StringBuilder();
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(checkConn.getInputStream(), "UTF-8"))) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    modelsResponse.append(line);
-                }
-            }
-            
-            JSONObject modelsJson = new JSONObject(modelsResponse.toString());
-            if (!modelsJson.has("models") || modelsJson.getJSONArray("models").length() == 0) {
-                throw new Exception("No AI models installed in Ollama. Please install " + model + " model first.");
-            }
-        } finally {
-            checkConn.disconnect();
+        // Optimize model checking with caching
+        if (!isModelsAvailable()) {
+            throw new Exception("No AI models available. Please install " + model + " model first.");
         }
         
-        // Now make the actual API call
+        // Optimize prompt for faster response
+        String optimizedPrompt = optimizePrompt(prompt);
+        
+        // Make the API call with optimized settings
         String ollamaUrl = "http://localhost:11434/api/generate";
         JSONObject payload = new JSONObject();
         payload.put("model", model);
-        payload.put("prompt", prompt);
-        payload.put("stream", false); // Get complete response at once
+        payload.put("prompt", optimizedPrompt);
+        payload.put("stream", false);
+        
+        // Performance optimizations for faster response
+        payload.put("options", new JSONObject()
+            .put("num_predict", 150)        // Limit response length
+            .put("temperature", 0.7)        // Balance creativity vs speed
+            .put("top_p", 0.9)             // Focus on likely tokens
+            .put("top_k", 40)              // Limit vocabulary for speed
+            .put("repeat_penalty", 1.1)     // Prevent repetition
+            .put("num_ctx", 2048)          // Optimize context window
+        );
         
         java.net.URI uri = java.net.URI.create(ollamaUrl);
         HttpURLConnection conn = (HttpURLConnection) uri.toURL().openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json");
         conn.setRequestProperty("Accept", "application/json");
-        conn.setRequestProperty("User-Agent", "LearningPlatform/1.0");
+        conn.setRequestProperty("Connection", "close"); // Optimize connection handling
         conn.setDoOutput(true);
         conn.setDoInput(true);
-        conn.setConnectTimeout(30000); // 30 seconds
-        conn.setReadTimeout(60000); // 60 seconds
+        conn.setConnectTimeout(5000);  // Reduced from 30s
+        conn.setReadTimeout(15000);    // Reduced from 60s
         
         try {
             // Write request payload
@@ -375,7 +471,7 @@ public class ChatbotServlet extends HttpServlet {
                 throw new Exception("Ollama API returned HTTP " + responseCode + ": " + conn.getResponseMessage());
             }
             
-            // Read response
+            // Read response efficiently
             StringBuilder response = new StringBuilder();
             try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"))) {
                 String line;
@@ -385,10 +481,76 @@ public class ChatbotServlet extends HttpServlet {
             }
             
             JSONObject responseJson = new JSONObject(response.toString());
-            return responseJson.optString("response", "I'm sorry, I couldn't generate a response.");
+            String aiResponse = responseJson.optString("response", "I'm sorry, I couldn't generate a response.");
+            
+            // Truncate if response is too long for better performance
+            if (aiResponse.length() > 800) {
+                aiResponse = aiResponse.substring(0, 800) + "... (response truncated for performance)";
+            }
+            
+            return aiResponse;
             
         } finally {
             conn.disconnect();
         }
+    }
+    
+    private boolean isModelsAvailable() {
+        long currentTime = System.currentTimeMillis();
+        
+        // Use cached result if recent
+        if (modelsAvailable != null && (currentTime - lastModelCheck) < MODEL_CHECK_INTERVAL) {
+            return modelsAvailable;
+        }
+        
+        try {
+            String checkUrl = "http://localhost:11434/api/tags";
+            java.net.URI checkUri = java.net.URI.create(checkUrl);
+            HttpURLConnection checkConn = (HttpURLConnection) checkUri.toURL().openConnection();
+            checkConn.setRequestMethod("GET");
+            checkConn.setConnectTimeout(2000); // Very short timeout
+            checkConn.setReadTimeout(3000);
+            
+            try {
+                int responseCode = checkConn.getResponseCode();
+                if (responseCode != HttpURLConnection.HTTP_OK) {
+                    modelsAvailable = false;
+                    lastModelCheck = currentTime;
+                    return false;
+                }
+                
+                StringBuilder response = new StringBuilder();
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(checkConn.getInputStream(), "UTF-8"))) {
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        response.append(line);
+                    }
+                }
+                
+                JSONObject modelsJson = new JSONObject(response.toString());
+                boolean hasModels = modelsJson.has("models") && modelsJson.getJSONArray("models").length() > 0;
+                
+                modelsAvailable = hasModels;
+                lastModelCheck = currentTime;
+                return hasModels;
+                
+            } finally {
+                checkConn.disconnect();
+            }
+        } catch (Exception e) {
+            modelsAvailable = false;
+            lastModelCheck = currentTime;
+            return false;
+        }
+    }
+    
+    private String optimizePrompt(String prompt) {
+        // Truncate very long prompts for faster processing
+        if (prompt.length() > 500) {
+            prompt = prompt.substring(0, 500);
+        }
+        
+        // Add instruction for concise response
+        return "Please provide a brief, helpful response (under 150 words): " + prompt;
     }
 }

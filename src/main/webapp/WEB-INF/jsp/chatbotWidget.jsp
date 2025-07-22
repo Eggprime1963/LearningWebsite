@@ -257,6 +257,7 @@
     display: flex;
     align-items: center;
     padding: 10px 15px;
+    animation: fadeIn 0.3s ease-in;
 }
 
 .typing-dots {
@@ -267,7 +268,7 @@
 .typing-dots span {
     width: 6px;
     height: 6px;
-    background: #666;
+    background: #667eea;
     border-radius: 50%;
     margin-right: 4px;
     animation: typing 1.4s infinite;
@@ -290,6 +291,58 @@
         transform: translateY(-10px);
         opacity: 1;
     }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Performance indicators */
+.message-performance {
+    font-size: 0.7rem;
+    color: #6c757d;
+    margin-top: 4px;
+    font-style: italic;
+}
+
+.message-bubble.ai {
+    background: white;
+    color: #333;
+    border: 1px solid #e0e0e0;
+    border-bottom-left-radius: 5px;
+    transition: all 0.2s ease;
+}
+
+.message-bubble.ai:hover {
+    border-color: #667eea;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+}
+
+/* Timeout and error states */
+.error-message {
+    background: #fff3cd !important;
+    border: 1px solid #ffeaa7 !important;
+    color: #856404 !important;
+}
+
+.timeout-message {
+    background: #f8d7da !important;
+    border: 1px solid #f5c6cb !important;
+    color: #721c24 !important;
+}
+
+/* Quick response indicators */
+.fast-response {
+    border-left: 3px solid #28a745;
+}
+
+.slow-response {
+    border-left: 3px solid #ffc107;
+}
+
+.timeout-response {
+    border-left: 3px solid #dc3545;
 }
 
 .chat-footer {
@@ -427,46 +480,92 @@ document.addEventListener('DOMContentLoaded', function() {
             
             this.showTypingIndicator();
             
+            // Add timeout for better user experience
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Request timeout')), 12000); // 12 second timeout
+            });
+            
+            const fetchPromise = fetch('${pageContext.request.contextPath}/chatbot', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: message,
+                    type: this.getQueryType(message)
+                })
+            });
+            
             try {
-                const response = await fetch('${pageContext.request.contextPath}/chatbot', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        message: message,
-                        type: this.getQueryType(message)
-                    })
-                });
+                const startTime = Date.now();
+                const response = await Promise.race([fetchPromise, timeoutPromise]);
                 
                 if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                    throw new Error(`Server error: ${response.status}`);
                 }
                 
                 const data = await response.json();
+                const responseTime = Date.now() - startTime;
+                
                 this.hideTypingIndicator();
-                this.addMessage('ai', data.reply || 'I apologize, but I couldn\'t generate a response. Please try again.');
+                
+                // Display response with processing time if available
+                let reply = data.reply || 'I apologize, but I couldn\'t generate a response. Please try again.';
+                if (data.processingTime && data.processingTime > 5000) {
+                    reply += `\n\n(Response took ${Math.round(data.processingTime/1000)}s - AI service may be slow)`;
+                }
+                
+                // Add message with performance styling
+                this.addMessage('ai', reply, responseTime);
                 
             } catch (error) {
                 console.error('Chat error:', error);
                 this.hideTypingIndicator();
-                this.addMessage('ai', 'I\'m sorry, I\'m having trouble connecting right now. Please try again in a moment.');
+                
+                let errorMessage;
+                let errorType = 'error';
+                
+                if (error.message === 'Request timeout') {
+                    errorType = 'timeout';
+                    errorMessage = 'The AI is taking longer than usual to respond. Here are some quick tips:\n\n' +
+                                 '• Try a shorter, more specific question\n' +
+                                 '• Check our course materials for immediate help\n' +
+                                 '• The AI will be faster once it\'s warmed up';
+                } else if (error.message.includes('Server error')) {
+                    errorMessage = 'I\'m having trouble connecting to the AI service right now. You can:\n\n' +
+                                 '• Browse our course catalog\n' +
+                                 '• Check the FAQ section\n' +
+                                 '• Try asking a simpler question';
+                } else {
+                    errorMessage = 'I\'m having a temporary issue. Please try again in a moment, or browse our courses for immediate help.';
+                }
+                
+                this.addMessage('ai', errorMessage, null, errorType);
+            } finally {
+                this.elements.sendBtn.disabled = false;
             }
         },
         
         getQueryType(message) {
             const msg = message.toLowerCase();
-            if (msg.includes('code') || msg.includes('debug') || msg.includes('error') || msg.includes('function')) {
+            
+            // More specific keyword matching for better routing
+            if (msg.includes('code') || msg.includes('debug') || msg.includes('error') || 
+                msg.includes('function') || msg.includes('syntax') || msg.includes('bug') ||
+                msg.includes('programming') || msg.includes('algorithm')) {
                 return 'programming-help';
-            } else if (msg.includes('recommend') || msg.includes('suggest') || msg.includes('course') || msg.includes('learn')) {
+            } else if (msg.includes('recommend') || msg.includes('suggest') || 
+                      msg.includes('what course') || msg.includes('which course') ||
+                      msg.includes('beginner') || msg.includes('advanced') || msg.includes('learn')) {
                 return 'recommendation';
-            } else if (msg.includes('help') || msg.includes('course')) {
+            } else if (msg.includes('assignment') || msg.includes('lecture') || 
+                      msg.includes('course') || msg.includes('homework') || msg.includes('help')) {
                 return 'course-help';
             }
             return 'general';
         },
         
-        addMessage(sender, text) {
+        addMessage(sender, text, responseTime = null, messageType = 'normal') {
             const messageDiv = document.createElement('div');
             messageDiv.className = `chat-message ${sender}`;
             
@@ -476,7 +575,36 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const bubbleDiv = document.createElement('div');
             bubbleDiv.className = `message-bubble ${sender}`;
-            bubbleDiv.textContent = text;
+            
+            // Apply performance and error styling
+            if (sender === 'ai') {
+                if (messageType === 'timeout') {
+                    bubbleDiv.classList.add('timeout-message', 'timeout-response');
+                } else if (messageType === 'error') {
+                    bubbleDiv.classList.add('error-message');
+                } else if (responseTime !== null) {
+                    if (responseTime < 3000) {
+                        bubbleDiv.classList.add('fast-response');
+                    } else if (responseTime > 8000) {
+                        bubbleDiv.classList.add('slow-response');
+                    }
+                }
+            }
+            
+            // Format message with line breaks for better readability
+            if (sender === 'ai') {
+                bubbleDiv.innerHTML = this.formatMessage(text);
+                
+                // Add performance indicator for slow responses
+                if (responseTime !== null && responseTime > 5000) {
+                    const perfDiv = document.createElement('div');
+                    perfDiv.className = 'message-performance';
+                    perfDiv.textContent = `Response time: ${Math.round(responseTime/1000)}s`;
+                    bubbleDiv.appendChild(perfDiv);
+                }
+            } else {
+                bubbleDiv.textContent = text;
+            }
             
             if (sender === 'ai') {
                 messageDiv.appendChild(avatarDiv);
@@ -490,7 +618,19 @@ document.addEventListener('DOMContentLoaded', function() {
             this.scrollToBottom();
         },
         
+        formatMessage(text) {
+            // Convert line breaks and format lists for better display
+            return text
+                .replace(/\n\n/g, '<br><br>')
+                .replace(/\n/g, '<br>')
+                .replace(/•/g, '&bull;')
+                .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>'); // Bold text
+        },
+        
         showTypingIndicator() {
+            // Remove any existing typing indicator first
+            this.hideTypingIndicator();
+            
             const typingDiv = document.createElement('div');
             typingDiv.id = 'typingIndicator';
             typingDiv.className = 'typing-indicator';
@@ -503,6 +643,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span></span>
                     <span></span>
                 </div>
+                <small class="text-muted ms-2">AI is thinking...</small>
             `;
             
             this.elements.messages.appendChild(typingDiv);

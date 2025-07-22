@@ -51,7 +51,7 @@
                             <c:forEach var="c" items="${courses}">
                                 <div class="col-md-6 col-lg-4">
                                     <div class="card h-100 shadow-sm rounded-4">
-                                        <img src="${pageContext.request.contextPath}/img/${c.thumbnail}" class="card-img-top rounded-top-4" alt="Course Thumbnail" style="height:180px;object-fit:cover;">
+                                        <img src="${pageContext.request.contextPath}/img/${c.image}" class="card-img-top rounded-top-4" alt="Course Thumbnail" style="height:180px;object-fit:cover;">
                                         <div class="card-body d-flex flex-column">
                                             <h5 class="card-title">${c.name}</h5>
                                             <p class="card-text">${c.description}</p>
