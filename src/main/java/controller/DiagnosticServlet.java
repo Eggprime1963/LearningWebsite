@@ -9,7 +9,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import util.HerokuConfig;
+
 
 /**
  * Diagnostic servlet to help troubleshoot deployment issues
@@ -35,7 +35,8 @@ public class DiagnosticServlet extends HttpServlet {
         out.println("<ul>");
         out.println("<li>Java Version: " + System.getProperty("java.version") + "</li>");
         out.println("<li>OS: " + System.getProperty("os.name") + "</li>");
-        out.println("<li>Heroku Environment: " + HerokuConfig.isHeroku() + "</li>");
+        out.println("<li>Production Environment: " + (System.getenv("DATABASE_URL") != null) + "</li>");
+        out.println("<li>Custom Domain: " + System.getenv("CUSTOM_DOMAIN") + "</li>");
         out.println("<li>Context Path: " + request.getContextPath() + "</li>");
         out.println("<li>Server Info: " + getServletContext().getServerInfo() + "</li>");
         out.println("</ul>");
