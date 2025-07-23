@@ -72,11 +72,19 @@
     <artifactId>mysql-connector-j</artifactId>
     <version>9.3.0</version>
 </dependency>
+
 <!-- JPA Implementation (Hibernate) -->
 <dependency>
     <groupId>org.hibernate</groupId>
     <artifactId>hibernate-core</artifactId>
     <version>6.4.4.Final</version> <!-- Phiên bản tương thích với Jakarta EE 10 -->
+</dependency>
+
+<!-- Connection Pooling for Production -->
+<dependency>
+    <groupId>org.hibernate</groupId>
+    <artifactId>hibernate-c3p0</artifactId>
+    <version>6.4.4.Final</version>
 </dependency>
 
 <!-- Hibernate Validator -->
