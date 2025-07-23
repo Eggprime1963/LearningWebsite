@@ -128,6 +128,7 @@
             </plugin>
             
             <!-- Maven Dependency Plugin for embedded Tomcat (Vercel deployment) -->
+            <!--
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -151,6 +152,7 @@
                     </execution>
                 </executions>
             </plugin>
+            -->
         </plugins>
     </build>
 </project>
