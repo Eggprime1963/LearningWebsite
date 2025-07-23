@@ -30,12 +30,6 @@
       "destination": "/"
     }
   ],
-  "env": {
-    "DATABASE_URL": "@database_url",
-    "OLLAMA_BASE_URL": "@ollama_base_url",
-    "GEMINI_API_KEY": "@gemini_api_key",
-    "CUSTOM_DOMAIN": "learn.nguyenstudy0504.tech"
-  },
   "git": {
     "deploymentEnabled": {
       "main": true
