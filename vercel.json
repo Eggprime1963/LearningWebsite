@@ -36,11 +36,6 @@
     "GEMINI_API_KEY": "@gemini_api_key",
     "CUSTOM_DOMAIN": "learn.nguyenstudy0504.tech"
   },
-  "functions": {
-    "src/**/*.java": {
-      "runtime": "@vercel/java@1.1.0"
-    }
-  },
   "git": {
     "deploymentEnabled": {
       "main": true
