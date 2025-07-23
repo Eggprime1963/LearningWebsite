@@ -1,6 +1,23 @@
 # Vercel Deployment Checklist
 ## Domain: learn.nguyenstudy0504.tech
 
+### ✅ **RESOLVED DEPLOYMENT ISSUES**
+
+#### 1. Git Submodule Warning ✅
+- **Issue**: `Warning: Failed to fetch one or more git submodules`
+- **Solution**: Converted CSS submodule to regular files
+- **Status**: ✅ Fixed and committed
+
+#### 2. Vercel Configuration Conflict ✅
+- **Issue**: `The functions property cannot be used in conjunction with the builds property`
+- **Solution**: Removed `functions` property, kept `builds` with `@vercel/java`
+- **Status**: ✅ Fixed and committed
+
+#### 3. Vercel Routing Conflict ✅
+- **Issue**: `If rewrites, redirects, headers, cleanUrls or trailingSlash are used, then routes cannot be present`
+- **Solution**: Replaced deprecated `routes` with modern `rewrites` syntax
+- **Status**: ✅ Fixed and committed
+
 ### Pre-Deployment Checklist ✅
 
 - [ ] **Node.js Installed**: Download from https://nodejs.org/ (LTS version)
