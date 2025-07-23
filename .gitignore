@@ -19,6 +19,15 @@
 *.tar.gz
 *.rar
 
+# Git submodules (to prevent Vercel warnings)
+.gitmodules
+.git/modules/
+
+# Environment files
+.env
+.env.local
+.env.production
+
 # Virtual machine crash logs
 hs_err_pid*
 replay_pid*
@@ -70,9 +79,12 @@ temp/
 *.sqlite
 *.sql.backup
 
-# But keep these files for Heroku
-!Procfile
-!system.properties
-!app.json
-!deploy-heroku.sh
-!deploy-heroku.bat
+# Vercel
+.vercel
+
+# Build artifacts
+dist/
+build/
+
+# Deployment files
+*.tgz

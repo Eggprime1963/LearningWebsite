@@ -274,12 +274,12 @@ public class VNPayConfig {
     
     /**
      * Get the return URL based on the environment
-     * For Heroku deployment, use the app URL, otherwise localhost
+     * Uses environment variable or defaults to localhost for development
      */
     private static String getReturnUrl() {
-        String herokuAppUrl = System.getenv("HEROKU_APP_URL");
-        if (herokuAppUrl != null && !herokuAppUrl.isEmpty()) {
-            return herokuAppUrl + "/payment/return";
+        String customDomain = System.getenv("CUSTOM_DOMAIN");
+        if (customDomain != null && !customDomain.isEmpty()) {
+            return "https://" + customDomain + "/payment/return";
         }
         return "http://localhost:8080/payment/return";
     }

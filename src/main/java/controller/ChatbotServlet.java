@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import model.User;
+import util.EnhancedAIService;
 
 @WebServlet(name = "ChatbotServlet", urlPatterns = {"/chatbot", "/ai", "/chat"})
 public class ChatbotServlet extends HttpServlet {
@@ -31,14 +32,18 @@ public class ChatbotServlet extends HttpServlet {
         response.setContentType("application/json");
         
         if ("test".equals(action)) {
-            // Reset cache and test model availability
-            resetModelCache();
-            boolean available = isModelsAvailable();
+            // Test enhanced AI service status
+            String serviceStatus = EnhancedAIService.getServiceStatus();
+            boolean ollamaAvailable = EnhancedAIService.isOllamaAvailable();
+            boolean geminiAvailable = EnhancedAIService.isGeminiAvailable();
             
             JSONObject testResponse = new JSONObject();
-            testResponse.put("modelsAvailable", available);
+            testResponse.put("serviceStatus", serviceStatus);
+            testResponse.put("ollamaAvailable", ollamaAvailable);
+            testResponse.put("geminiAvailable", geminiAvailable);
             testResponse.put("timestamp", System.currentTimeMillis());
-            testResponse.put("message", available ? "Ollama models are available" : "Ollama models not available");
+            testResponse.put("message", "AI Service Test - " + 
+                (ollamaAvailable ? "Ollama Ready" : geminiAvailable ? "Gemini Ready" : "No AI Service Available"));
             
             response.getWriter().write(testResponse.toString());
             return;

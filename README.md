@@ -521,8 +521,7 @@ flowchart TD
 - **JUnit** - Unit testing framework
 - **Log4j** - Logging and monitoring
 - **Docker** - Containerization and deployment (optional)
-- **Heroku** - Cloud platform deployment with automated scaling
-- **ClearDB** - MySQL database hosting on Heroku
+- **Vercel** - Modern cloud platform deployment with global CDN
 
 ## 📁 Project Structure
 
@@ -796,39 +795,42 @@ cp target/learning-platform-1.0.0.war $TOMCAT_HOME/webapps/
 $TOMCAT_HOME/bin/startup.sh
 ```
 
-### Heroku Deployment
+### Vercel Deployment (Custom Domain: learn.nguyenstudy0504.tech)
+
+The application is configured for Vercel deployment with custom domain support:
+
 ```bash
-# Method 1: Automated deployment script (recommended)
-# Windows users:
-deploy-heroku.bat
+# 1. Install Vercel CLI
+npm install -g vercel
 
-# Linux/Mac users:
-chmod +x deploy-heroku.sh
-./deploy-heroku.sh
+# 2. Login to Vercel
+vercel login
 
-# Method 2: Manual deployment
-# 1. Install Heroku CLI and login
-heroku login
+# 3. Deploy to production
+vercel --prod
 
-# 2. Create Heroku app
-heroku create your-app-name
-
-# 3. Add ClearDB MySQL addon
-heroku addons:create cleardb:ignite
-
-# 4. Set environment variables
-heroku config:set JAVA_OPTS="-Xmx512m -Xms256m"
-heroku config:set MAVEN_CUSTOM_OPTS="-DskipTests=true"
-
-# 5. Deploy
-git add .
-git commit -m "Deploy to Heroku"
-git push heroku main
-
-# 6. Initialize database (run once after first deployment)
-heroku config:get CLEARDB_DATABASE_URL
-# Use the database URL to run heroku-db-init.sql
+# 4. Add custom domain
+vercel domains add learn.nguyenstudy0504.tech
+vercel domains assign learn.nguyenstudy0504.tech
 ```
+
+**DNS Configuration for Custom Domain:**
+- Add CNAME record: `learn` → `cname.vercel-dns.com`
+- Or use A records: `learn` → `76.76.19.61` and `76.223.126.88`
+
+**Environment Variables (set in Vercel dashboard):**
+- `DATABASE_URL`: Production MySQL database connection
+- `OLLAMA_BASE_URL`: Ollama service URL (optional)
+- `GEMINI_API_KEY`: Google Gemini API key for AI features
+
+**Features:**
+- ✅ Automatic SSL certificate generation
+- ✅ Global CDN distribution
+- ✅ Automatic deployments from Git
+- ✅ Custom domain with security headers
+- ✅ AI service with Ollama/Gemini fallback
+
+📋 **Complete Setup Guide:** See `COMPLETE_VERCEL_SETUP.md` for detailed instructions.
 
 ### Docker Deployment
 ```dockerfile
@@ -988,14 +990,20 @@ copies or substantial portions of the Software.
 
 ## 🎉 Recent Updates & Changelog
 
-### Version 2.2 - Heroku Deployment Ready (Current)
-- ✅ **Heroku Configuration**: Complete deployment setup with automated scripts
-- ✅ **ClearDB Integration**: MySQL database configuration for Heroku
-- ✅ **Environment Detection**: Automatic configuration switching
-- ✅ **Heroku Buildpack**: Optimized Java buildpack configuration
-- ✅ **Database Migration**: Automated database initialization scripts
-- ✅ **Performance Tuning**: Heroku-optimized JVM and connection pool settings
-- ✅ **Deployment Scripts**: Automated deployment for Windows and Unix systems
+### Version 2.3 - Vercel Deployment Ready (Current)
+- ✅ **Vercel Configuration**: Complete deployment setup with custom domain support
+- ✅ **Modern Cloud Platform**: Global CDN and serverless architecture
+- ✅ **Custom Domain**: Configured for learn.nguyenstudy0504.tech
+- ✅ **Enhanced AI Service**: Dual AI service with Ollama/Gemini API fallback
+- ✅ **Security Headers**: Production-ready security configuration
+- ✅ **Performance Optimization**: Automatic static asset optimization
+- ✅ **Clean Architecture**: Removed legacy deployment configurations
+
+### Version 2.2 - Code Cleanup & Optimization
+- ✅ **Codebase Cleanup**: Removed duplicate and unused files/functions
+- ✅ **Enhanced VNPay Integration**: Improved signature validation following official patterns
+- ✅ **Enrollment State Management**: Dynamic homepage buttons based on actual enrollment
+- ✅ **Database Optimization**: Streamlined DAO classes and removed unused components
 
 ### Version 2.1 - AI Enhancement Release
 - ✅ **Enhanced AI Chatbot** with robust fallback system
