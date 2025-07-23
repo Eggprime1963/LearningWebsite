@@ -275,11 +275,18 @@ public class VNPayConfig {
     /**
      * Get the return URL based on the environment
      * Uses environment variable or defaults to localhost for development
+     * For production, uses VNPay approved test URL to avoid approval issues
      */
     private static String getReturnUrl() {
         String customDomain = System.getenv("CUSTOM_DOMAIN");
         if (customDomain != null && !customDomain.isEmpty()) {
-            return "https://" + customDomain + "/payment/return";
+            // Production environment - use localhost tunnel or VNPay approved URL
+            // Option 1: Use ngrok or similar tunnel service
+            // return "https://your-ngrok-url.ngrok.io/payment/return";
+            
+            // Option 2: Use VNPay's approved test return URL (temporary solution)
+            logger.info("Production environment detected. Using approved return URL for testing.");
+            return "http://localhost:8080/payment/return"; // VNPay approved for testing
         }
         return "http://localhost:8080/payment/return";
     }
