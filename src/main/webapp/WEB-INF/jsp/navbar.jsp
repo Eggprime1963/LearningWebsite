@@ -38,10 +38,10 @@
                             <a class="nav-link active" href="${pageContext.request.contextPath}/home">Home</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="${pageContext.request.contextPath}/course">Manage Courses</a>
+                                <a class="nav-link" href="${pageContext.request.contextPath}/myClassroom">Manage Courses</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="${pageContext.request.contextPath}/gradeAssignments">Grade Assignments</a>
+                                <a class="nav-link" href="${pageContext.request.contextPath}/grade">Grade Assignments</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="${pageContext.request.contextPath}/studentList">Student List</a>

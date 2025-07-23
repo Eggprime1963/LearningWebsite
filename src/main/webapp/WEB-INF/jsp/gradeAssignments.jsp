@@ -15,14 +15,14 @@
     </style>
 </head>
 <body>
-    <jsp:include page="/view/navbar.jsp" />
+    <jsp:include page="navbar.jsp" />
      <div class="container">
     <c:if test="${not empty error}">
         <p style="color: red;">Error: ${error}</p>
     </c:if>
 
     <c:if test="${empty submissions}">
-        <p>Không có bài nộp nào cho các bài tập của bạn.</p>
+        <p>No submissions found for your assignments.</p>
     </c:if>
 
     <c:if test="${not empty submissions}">

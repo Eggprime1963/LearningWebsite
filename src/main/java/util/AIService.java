@@ -182,12 +182,12 @@ public class AIService {
             case "programming":
             case "code":
             case "debug":
-                return "codellama"; // Better for code-related queries
+                return "codellama:latest"; // Better for code-related queries
             case "general":
             case "recommendation":
             case "chat":
             default:
-                return "llama3"; // General purpose model
+                return "llama3:latest"; // General purpose model
         }
     }
 }

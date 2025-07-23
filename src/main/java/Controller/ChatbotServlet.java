@@ -5,26 +5,51 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.json.JSONObject;
 
-import dao.CourseDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import model.Course;
 import model.User;
 
 @WebServlet(name = "ChatbotServlet", urlPatterns = {"/chatbot", "/ai", "/chat"})
 public class ChatbotServlet extends HttpServlet {
     private static final Logger logger = Logger.getLogger(ChatbotServlet.class.getName());
-    private final CourseDAO courseDAO = new CourseDAO();
+    
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        // Simple test endpoint
+        String action = request.getParameter("action");
+        response.setContentType("application/json");
+        
+        if ("test".equals(action)) {
+            // Reset cache and test model availability
+            resetModelCache();
+            boolean available = isModelsAvailable();
+            
+            JSONObject testResponse = new JSONObject();
+            testResponse.put("modelsAvailable", available);
+            testResponse.put("timestamp", System.currentTimeMillis());
+            testResponse.put("message", available ? "Ollama models are available" : "Ollama models not available");
+            
+            response.getWriter().write(testResponse.toString());
+            return;
+        }
+        
+        // Default response for GET requests
+        JSONObject defaultResponse = new JSONObject();
+        defaultResponse.put("status", "ChatbotServlet is running");
+        defaultResponse.put("endpoints", "POST for chat, GET?action=test for testing");
+        response.getWriter().write(defaultResponse.toString());
+    }
     
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -62,8 +87,8 @@ public class ChatbotServlet extends HttpServlet {
         long startTime = System.currentTimeMillis();
         
         try {
-            // Set a maximum processing time of 10 seconds
-            final long MAX_PROCESSING_TIME = 8000; // Reduced to 8 seconds
+            // Set a maximum processing time of 6 seconds for faster response
+            final long MAX_PROCESSING_TIME = 6000; // Reduced to 6 seconds
             
             // Choose AI response based on chat type with timeout protection
             switch (chatType) {
@@ -119,8 +144,10 @@ public class ChatbotServlet extends HttpServlet {
     
     private String processWithTimeout(ResponseGenerator generator, long timeoutMs, FallbackGenerator fallback) {
         try {
-            // Quick check if AI is likely to be fast
-            if (modelsAvailable == null || !modelsAvailable) {
+            // Always check model availability fresh for now (bypass cache)
+            resetModelCache();
+            if (!isModelsAvailable()) {
+                logger.warning("Models not available, using fallback");
                 return fallback.generate();
             }
             
@@ -185,12 +212,10 @@ public class ChatbotServlet extends HttpServlet {
     
     private String handleCourseHelp(String userMsg, User user) throws Exception {
         try {
-            // Enhanced context for course-specific help
-            String contextPrompt = buildCourseContextPrompt(user);
-            String fullPrompt = contextPrompt + "\n\nUser question: " + userMsg + 
-                               "\n\nPlease provide helpful, educational guidance related to programming and learning.";
+            // Simplified context for faster processing
+            String contextPrompt = "You are a programming tutor. Help with this question: " + userMsg;
             
-            return callOllamaAPI(fullPrompt, "llama3");
+            return callOllamaAPI(contextPrompt, "llama3.2:1b");
         } catch (Exception e) {
             logger.log(Level.WARNING, "AI service unavailable, using fallback response", e);
             return generateCourseHelpFallback(userMsg, user);
@@ -199,23 +224,10 @@ public class ChatbotServlet extends HttpServlet {
     
     private String handleRecommendation(String userMsg, User user) throws Exception {
         try {
-            // Get available courses for context
-            List<Course> courses = courseDAO.getAllCourses();
-            StringBuilder courseContext = new StringBuilder();
-            courseContext.append("Available courses in our learning platform:\n");
+            // Simplified recommendation prompt for speed
+            String contextPrompt = "Recommend programming courses for: " + userMsg;
             
-            for (Course course : courses) {
-                courseContext.append("- ").append(course.getName())
-                            .append(": ").append(course.getDescription()).append("\n");
-            }
-            
-            String contextPrompt = "You are an AI learning advisor for a programming education platform. " +
-                                  "Help students choose the best courses based on their interests and goals.\n\n" +
-                                  courseContext.toString() + 
-                                  "\n\nUser request: " + userMsg +
-                                  "\n\nProvide personalized course recommendations with explanations.";
-            
-            return callOllamaAPI(contextPrompt, "llama3");
+            return callOllamaAPI(contextPrompt, "llama3.2:1b");
         } catch (Exception e) {
             logger.log(Level.WARNING, "AI service unavailable, using fallback response", e);
             return generateRecommendationFallback(userMsg, user);
@@ -224,12 +236,9 @@ public class ChatbotServlet extends HttpServlet {
     
     private String handleProgrammingHelp(String userMsg) throws Exception {
         try {
-            String contextPrompt = "You are an expert programming tutor. Help students understand programming concepts, " +
-                                  "debug code, and learn best practices. Provide clear, educational explanations.\n\n" +
-                                  "Student question: " + userMsg +
-                                  "\n\nProvide helpful programming guidance with examples when appropriate.";
+            String contextPrompt = "Programming tutor: " + userMsg;
             
-            return callOllamaAPI(contextPrompt, "codellama");
+            return callOllamaAPI(contextPrompt, "codellama:7b");
         } catch (Exception e) {
             logger.log(Level.WARNING, "AI service unavailable, using fallback response", e);
             return generateProgrammingHelpFallback(userMsg);
@@ -238,12 +247,9 @@ public class ChatbotServlet extends HttpServlet {
     
     private String handleGeneralChat(String userMsg, User user) throws Exception {
         try {
-            String contextPrompt = "You are a friendly AI assistant for a programming learning platform. " +
-                                  "Help students with general questions about learning, programming, and using the platform.\n\n" +
-                                  "User message: " + userMsg +
-                                  "\n\nProvide a helpful and encouraging response.";
+            String contextPrompt = "Friendly AI assistant: " + userMsg;
             
-            return callOllamaAPI(contextPrompt, "llama3");
+            return callOllamaAPI(contextPrompt, "llama3.2:1b");
         } catch (Exception e) {
             logger.log(Level.WARNING, "AI service unavailable, using fallback response", e);
             return generateGeneralChatFallback(userMsg, user);
@@ -393,28 +399,10 @@ public class ChatbotServlet extends HttpServlet {
         }
     }
     
-    private String buildCourseContextPrompt(User user) {
-        StringBuilder context = new StringBuilder();
-        context.append("You are an AI tutor for a programming learning platform. ");
-        
-        if (user != null) {
-            context.append("The user is ").append(user.getRole()).append(" named ").append(user.getUsername()).append(". ");
-            
-            // Add user-specific context based on role
-            if ("student".equals(user.getRole())) {
-                context.append("Help them learn programming concepts and understand course materials. ");
-            } else if ("teacher".equals(user.getRole())) {
-                context.append("Assist them with teaching methods and course content creation. ");
-            }
-        }
-        
-        return context.toString();
-    }
-    
     // Cache for model availability to avoid repeated checks
     private static volatile Boolean modelsAvailable = null;
     private static long lastModelCheck = 0;
-    private static final long MODEL_CHECK_INTERVAL = 300000; // 5 minutes
+    private static final long MODEL_CHECK_INTERVAL = 60000; // Increased to 60 seconds to reduce checks
     
     private String callOllamaAPI(String prompt, String model) throws Exception {
         // Optimize model checking with caching
@@ -432,14 +420,17 @@ public class ChatbotServlet extends HttpServlet {
         payload.put("prompt", optimizedPrompt);
         payload.put("stream", false);
         
-        // Performance optimizations for faster response
+        // Aggressive performance optimizations for faster response
         payload.put("options", new JSONObject()
-            .put("num_predict", 150)        // Limit response length
-            .put("temperature", 0.7)        // Balance creativity vs speed
-            .put("top_p", 0.9)             // Focus on likely tokens
-            .put("top_k", 40)              // Limit vocabulary for speed
-            .put("repeat_penalty", 1.1)     // Prevent repetition
-            .put("num_ctx", 2048)          // Optimize context window
+            .put("num_predict", 100)        // Reduced response length for speed
+            .put("temperature", 0.3)        // Lower temperature for faster, more focused responses
+            .put("top_p", 0.8)             // More focused token selection
+            .put("top_k", 20)              // Significantly limit vocabulary for speed
+            .put("repeat_penalty", 1.05)    // Minimal repetition penalty
+            .put("num_ctx", 1024)          // Smaller context window for speed
+            .put("num_thread", 4)          // Use multiple threads
+            .put("num_gpu", 1)             // Use GPU if available
+            .put("low_vram", true)         // Optimize for memory usage
         );
         
         java.net.URI uri = java.net.URI.create(ollamaUrl);
@@ -450,8 +441,8 @@ public class ChatbotServlet extends HttpServlet {
         conn.setRequestProperty("Connection", "close"); // Optimize connection handling
         conn.setDoOutput(true);
         conn.setDoInput(true);
-        conn.setConnectTimeout(5000);  // Reduced from 30s
-        conn.setReadTimeout(15000);    // Reduced from 60s
+        conn.setConnectTimeout(3000);  // Reduced to 3 seconds
+        conn.setReadTimeout(8000);     // Reduced to 8 seconds max
         
         try {
             // Write request payload
@@ -484,8 +475,8 @@ public class ChatbotServlet extends HttpServlet {
             String aiResponse = responseJson.optString("response", "I'm sorry, I couldn't generate a response.");
             
             // Truncate if response is too long for better performance
-            if (aiResponse.length() > 800) {
-                aiResponse = aiResponse.substring(0, 800) + "... (response truncated for performance)";
+            if (aiResponse.length() > 500) {
+                aiResponse = aiResponse.substring(0, 500) + "...";
             }
             
             return aiResponse;
@@ -500,20 +491,25 @@ public class ChatbotServlet extends HttpServlet {
         
         // Use cached result if recent
         if (modelsAvailable != null && (currentTime - lastModelCheck) < MODEL_CHECK_INTERVAL) {
+            logger.info("Using cached model availability: " + modelsAvailable);
             return modelsAvailable;
         }
         
         try {
+            logger.info("Checking Ollama model availability...");
             String checkUrl = "http://localhost:11434/api/tags";
             java.net.URI checkUri = java.net.URI.create(checkUrl);
             HttpURLConnection checkConn = (HttpURLConnection) checkUri.toURL().openConnection();
             checkConn.setRequestMethod("GET");
-            checkConn.setConnectTimeout(2000); // Very short timeout
-            checkConn.setReadTimeout(3000);
+            checkConn.setConnectTimeout(2000); // Reduced to 2 seconds
+            checkConn.setReadTimeout(3000);    // Reduced to 3 seconds
             
             try {
                 int responseCode = checkConn.getResponseCode();
+                logger.info("Ollama API response code: " + responseCode);
+                
                 if (responseCode != HttpURLConnection.HTTP_OK) {
+                    logger.warning("Ollama API returned non-200 response: " + responseCode);
                     modelsAvailable = false;
                     lastModelCheck = currentTime;
                     return false;
@@ -527,8 +523,14 @@ public class ChatbotServlet extends HttpServlet {
                     }
                 }
                 
-                JSONObject modelsJson = new JSONObject(response.toString());
+                String responseStr = response.toString();
+                logger.info("Ollama API response: " + responseStr.substring(0, Math.min(100, responseStr.length())));
+                
+                JSONObject modelsJson = new JSONObject(responseStr);
                 boolean hasModels = modelsJson.has("models") && modelsJson.getJSONArray("models").length() > 0;
+                
+                logger.info("Models available: " + hasModels + " (found " + 
+                           (hasModels ? modelsJson.getJSONArray("models").length() : 0) + " models)");
                 
                 modelsAvailable = hasModels;
                 lastModelCheck = currentTime;
@@ -538,6 +540,7 @@ public class ChatbotServlet extends HttpServlet {
                 checkConn.disconnect();
             }
         } catch (Exception e) {
+            logger.log(Level.WARNING, "Error checking model availability: " + e.getMessage(), e);
             modelsAvailable = false;
             lastModelCheck = currentTime;
             return false;
@@ -546,11 +549,19 @@ public class ChatbotServlet extends HttpServlet {
     
     private String optimizePrompt(String prompt) {
         // Truncate very long prompts for faster processing
-        if (prompt.length() > 500) {
-            prompt = prompt.substring(0, 500);
+        if (prompt.length() > 300) {
+            prompt = prompt.substring(0, 300);
         }
         
-        // Add instruction for concise response
-        return "Please provide a brief, helpful response (under 150 words): " + prompt;
+        // Add instruction for very concise response
+        return "Answer briefly in under 80 words: " + prompt;
+    }
+    
+    /**
+     * Force reset the model availability cache for testing
+     */
+    public static void resetModelCache() {
+        modelsAvailable = null;
+        lastModelCheck = 0;
     }
 }

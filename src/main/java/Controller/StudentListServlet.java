@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpSession;
 import model.Course;
 import model.Enrollment;
 import model.User;
+
 @WebServlet(name = "StudentListServlet", urlPatterns = {"/studentList", "/students-list"})
 public class StudentListServlet extends HttpServlet {
     private final CourseDAO courseDAO = new CourseDAO();
@@ -25,18 +26,19 @@ public class StudentListServlet extends HttpServlet {
             throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session == null || !"teacher".equals(session.getAttribute("role"))) {
-            response.sendRedirect("WEB-INF/jsp/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
         try {
-            Integer teacherIdObj = (Integer) session.getAttribute("teacherId");
+
+            User teacherIdObj = (User) session.getAttribute("user");
             if (teacherIdObj == null) {
                 request.setAttribute("error", "Teacher ID is not set in session. Please log in again.");
                 request.getRequestDispatcher("/WEB-INF/jsp/enrolledCourseList.jsp").forward(request, response);
                 return;
             }
-            int teacherId = teacherIdObj.intValue();
+            int teacherId = teacherIdObj.getId();
 
             List<Course> courses = courseDAO.getCoursesByTeacher(teacherId);
             if (courses != null && !courses.isEmpty()) {

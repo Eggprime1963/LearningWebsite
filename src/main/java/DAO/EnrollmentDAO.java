@@ -95,7 +95,13 @@ public class EnrollmentDAO {
     public List<Enrollment> getEnrollmentsByStudentId(int studentId) {
         EntityManager em = JPAUtil.getEntityManager();
         try {
-            TypedQuery<Enrollment> query = em.createQuery("SELECT e FROM Enrollment e WHERE e.student.id = :studentId", Enrollment.class);
+            TypedQuery<Enrollment> query = em.createQuery(
+                "SELECT e FROM Enrollment e " +
+                "JOIN FETCH e.student " +
+                "JOIN FETCH e.course " +
+                "WHERE e.student.id = :studentId", 
+                Enrollment.class
+            );
             query.setParameter("studentId", studentId);
             return query.getResultList();
         } catch (Exception e) {
@@ -113,11 +119,90 @@ public class EnrollmentDAO {
         EntityTransaction transaction = em.getTransaction();
         try {
             transaction.begin();
+            
+            // Check if enrollment exists
+            if (enrollment == null || enrollment.getId() == null) {
+                logger.log(Level.WARNING, "Invalid enrollment for deletion");
+                transaction.rollback();
+                return;
+            }
+            
+            // Check for dependencies - student submissions related to this enrollment
+            Long submissionCount = em.createQuery(
+                "SELECT COUNT(s) FROM Submission s WHERE s.student.id = :studentId AND " +
+                "(s.lecture IN (SELECT l FROM Lecture l WHERE l.course.idCourse = :courseId) OR " +
+                "s.assignment IN (SELECT a FROM Assignment a WHERE a.lecture IN " +
+                "(SELECT l FROM Lecture l WHERE l.course.idCourse = :courseId)))", Long.class)
+                .setParameter("studentId", enrollment.getStudent().getId())
+                .setParameter("courseId", enrollment.getCourse().getIdCourse())
+                .getSingleResult();
+            
+            if (submissionCount > 0) {
+                logger.log(Level.WARNING, 
+                    "Cannot delete enrollment for student {0} in course {1}: has {2} submissions", 
+                    new Object[]{enrollment.getStudent().getId(), enrollment.getCourse().getIdCourse(), submissionCount});
+                throw new RuntimeException(
+                    String.format("Cannot delete enrollment: student has %d submissions in this course. " +
+                                "Consider archiving the enrollment instead.", submissionCount.intValue()));
+            }
+            
             em.remove(em.contains(enrollment) ? enrollment : em.merge(enrollment));
             transaction.commit();
+            logger.log(Level.INFO, "Successfully deleted enrollment for student {0} in course {1}", 
+                new Object[]{enrollment.getStudent().getId(), enrollment.getCourse().getIdCourse()});
+            
         } catch (Exception e) {
             if (transaction.isActive()) transaction.rollback();
-            throw new RuntimeException("Could not delete enrollment", e);
+            logger.log(Level.SEVERE, "Error deleting enrollment", e);
+            throw new RuntimeException("Failed to delete enrollment: " + e.getMessage(), e);
+        } finally {
+            em.close();
+        }
+    }
+    
+    /**
+     * Force delete enrollment with cascade - removes all related submissions
+     * USE WITH EXTREME CAUTION - this will delete all student work in the course!
+     * 
+     * @param enrollment the enrollment to force delete
+     */
+    public void forceDeleteEnrollmentWithCascade(Enrollment enrollment) {
+        EntityManager em = JPAUtil.getEntityManager();
+        EntityTransaction transaction = em.getTransaction();
+        try {
+            transaction.begin();
+            
+            if (enrollment == null || enrollment.getId() == null) {
+                logger.log(Level.WARNING, "Invalid enrollment for force deletion");
+                transaction.rollback();
+                return;
+            }
+            
+            int studentId = enrollment.getStudent().getId();
+            int courseId = enrollment.getCourse().getIdCourse();
+            
+            // Step 1: Delete all submissions by this student in this course
+            int deletedSubmissions = em.createQuery(
+                "DELETE FROM Submission s WHERE s.student.id = :studentId AND " +
+                "(s.lecture IN (SELECT l FROM Lecture l WHERE l.course.idCourse = :courseId) OR " +
+                "s.assignment IN (SELECT a FROM Assignment a WHERE a.lecture IN " +
+                "(SELECT l FROM Lecture l WHERE l.course.idCourse = :courseId)))")
+                .setParameter("studentId", studentId)
+                .setParameter("courseId", courseId)
+                .executeUpdate();
+            
+            // Step 2: Delete the enrollment
+            em.remove(em.contains(enrollment) ? enrollment : em.merge(enrollment));
+            
+            transaction.commit();
+            logger.log(Level.WARNING, 
+                "FORCE DELETE completed for enrollment (student {0}, course {1}): Deleted {2} submissions", 
+                new Object[]{studentId, courseId, deletedSubmissions});
+            
+        } catch (Exception e) {
+            if (transaction.isActive()) transaction.rollback();
+            logger.log(Level.SEVERE, "Error in force delete for enrollment", e);
+            throw new RuntimeException("Failed to force delete enrollment", e);
         } finally {
             em.close();
         }
@@ -162,7 +247,10 @@ public class EnrollmentDAO {
         EntityManager em = JPAUtil.getEntityManager();
         try {
             TypedQuery<Enrollment> query = em.createQuery(
-                "SELECT e FROM Enrollment e WHERE e.course.idCourse = :courseId AND e.student.role = 'student'",
+                "SELECT e FROM Enrollment e " +
+                "JOIN FETCH e.student " +
+                "JOIN FETCH e.course " +
+                "WHERE e.course.idCourse = :courseId AND e.student.role = 'student'",
                 Enrollment.class
             );
             query.setParameter("courseId", courseId);

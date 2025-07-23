@@ -6,11 +6,14 @@ import java.util.List;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
@@ -37,6 +40,24 @@ public class Course {
     @Column(name = "image")
     private String image;
     
+    @Column(name = "difficulty")
+    @Enumerated(EnumType.STRING)
+    private Difficulty difficulty;
+    
+    @Column(name = "category")
+    private String category;
+    
+    @Column(name = "lecture_count")
+    private int storedLectureCount;
+    
+    @Column(name = "price", precision = 10, scale = 2)
+    private java.math.BigDecimal price = java.math.BigDecimal.ZERO;
+    
+    // Enum for difficulty levels
+    public enum Difficulty {
+        beginner, intermediate, advanced
+    }
+    
     // Transient field for teacher name (not stored in database)
     @Transient
     private String teacherName;
@@ -44,6 +65,10 @@ public class Course {
     // Transient field for lecture count (not stored in database)
     @Transient
     private Long lectureCount;
+    
+    // Transient field for enrollment status (not stored in database)
+    @Transient
+    private boolean enrolled = false;
 
     // Correct: mappedBy points to the 'course' field in the Lecture entity
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -55,6 +80,10 @@ public class Course {
     
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Enrollment> enrollments = new ArrayList<>();
+    
+    // One-to-one relationship with CourseMetadata
+    @OneToOne(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private CourseMetadata courseMetadata;
     // Constructors, Getters, and Setters remain the same...
     public Course() {}
 
@@ -149,6 +178,30 @@ public class Course {
         this.enrollments = enrollments;
     }
 
+    public Difficulty getDifficulty() {
+        return difficulty;
+    }
+
+    public void setDifficulty(Difficulty difficulty) {
+        this.difficulty = difficulty;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public int getStoredLectureCount() {
+        return storedLectureCount;
+    }
+
+    public void setStoredLectureCount(int storedLectureCount) {
+        this.storedLectureCount = storedLectureCount;
+    }
+
     // Helper method to get students through enrollments
     public List<User> getStudents() {
         return enrollments.stream()
@@ -160,6 +213,30 @@ public class Course {
         this.enrollments = students.stream()
                 .map(student -> new Enrollment(student, this, java.time.LocalDateTime.now(), ""))
                 .collect(java.util.stream.Collectors.toList());
+    }
+
+    public CourseMetadata getCourseMetadata() {
+        return courseMetadata;
+    }
+
+    public void setCourseMetadata(CourseMetadata courseMetadata) {
+        this.courseMetadata = courseMetadata;
+    }
+
+    public java.math.BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(java.math.BigDecimal price) {
+        this.price = price;
+    }
+
+    public boolean isEnrolled() {
+        return enrolled;
+    }
+
+    public void setEnrolled(boolean enrolled) {
+        this.enrolled = enrolled;
     }
 
 }

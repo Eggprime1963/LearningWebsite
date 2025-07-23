@@ -2,132 +2,185 @@
 -- This script creates the necessary tables and inserts sample data
 -- Designed to work with ClearDB MySQL on Heroku
 
--- Create Users table
-CREATE TABLE IF NOT EXISTS Users (
-    idUser INT PRIMARY KEY AUTO_INCREMENT,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    role ENUM('student', 'teacher', 'admin') NOT NULL,
-    fullName VARCHAR(100),
-    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+-- Drop existing tables if they exist (in correct order due to foreign key constraints)
+DROP TABLE IF EXISTS `payments`;
+DROP TABLE IF EXISTS `submissions`;
+DROP TABLE IF EXISTS `user_activity`;
+DROP TABLE IF EXISTS `useractivity`;
+DROP TABLE IF EXISTS `enrollments`;
+DROP TABLE IF EXISTS `assignments`;
+DROP TABLE IF EXISTS `lectures`;
+DROP TABLE IF EXISTS `coursemetadata`;
+DROP TABLE IF EXISTS `courses`;
+DROP TABLE IF EXISTS `users`;
 
--- Create Courses table  
-CREATE TABLE IF NOT EXISTS Courses (
-    idCourse INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(100) NOT NULL,
-    description TEXT,
-    teacherName VARCHAR(100),
-    image VARCHAR(255),
-    lectureCount INT DEFAULT 0,
-    difficulty ENUM('beginner', 'intermediate', 'advanced') DEFAULT 'beginner',
-    category VARCHAR(50),
-    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+-- Create users table
+CREATE TABLE `users` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `role` varchar(255) DEFAULT NULL,
+  `google_id` varchar(255) DEFAULT NULL,
+  `first_name` varchar(50) DEFAULT NULL,
+  `last_name` varchar(50) DEFAULT NULL,
+  `date_of_birth` datetime(6) DEFAULT NULL,
+  `gender` varchar(10) DEFAULT NULL,
+  `address` varchar(255) DEFAULT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `school` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`),
+  UNIQUE KEY `email` (`email`),
+  UNIQUE KEY `google_id` (`google_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Create Lectures table
-CREATE TABLE IF NOT EXISTS Lectures (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    title VARCHAR(200) NOT NULL,
-    content TEXT,
-    videoUrl VARCHAR(500),
-    courseId INT,
-    lectureOrder INT,
-    duration INT,
-    isPublished BOOLEAN DEFAULT TRUE,
-    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (courseId) REFERENCES Courses(idCourse) ON DELETE CASCADE
-);
+-- Create courses table with price field
+CREATE TABLE `courses` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `description` text,
+  `teacher_id` int DEFAULT NULL,
+  `image` varchar(127) DEFAULT NULL,
+  `difficulty` enum('beginner','intermediate','advanced') DEFAULT 'beginner',
+  `category` varchar(50) DEFAULT NULL,
+  `lecture_count` int DEFAULT '0',
+  `price` decimal(10,2) DEFAULT '0.00',
+  PRIMARY KEY (`id`),
+  KEY `teacher_id` (`teacher_id`),
+  KEY `idx_courses_difficulty` (`difficulty`),
+  KEY `idx_courses_category` (`category`),
+  CONSTRAINT `courses_ibfk_1` FOREIGN KEY (`teacher_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Create Enrollments table
-CREATE TABLE IF NOT EXISTS Enrollments (
-    studentId INT,
-    courseId INT,
-    enrollmentDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    progress DECIMAL(5,2) DEFAULT 0.00,
-    lastAccessDate TIMESTAMP,
-    PRIMARY KEY (studentId, courseId),
-    FOREIGN KEY (studentId) REFERENCES Users(idUser) ON DELETE CASCADE,
-    FOREIGN KEY (courseId) REFERENCES Courses(idCourse) ON DELETE CASCADE
-);
+-- Create remaining tables to match the main schema
 
--- Create Assignments table
-CREATE TABLE IF NOT EXISTS Assignments (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    title VARCHAR(200) NOT NULL,
-    description TEXT,
-    courseId INT,
-    dueDate DATETIME,
-    maxPoints INT DEFAULT 100,
-    isPublished BOOLEAN DEFAULT TRUE,
-    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (courseId) REFERENCES Courses(idCourse) ON DELETE CASCADE
-);
+CREATE TABLE `assignments` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `course_id` int DEFAULT NULL,
+  `lecture_id` int DEFAULT NULL,
+  `title` varchar(100) NOT NULL,
+  `description` text,
+  `due_date` datetime NOT NULL,
+  `status` varchar(100) DEFAULT 'pending',
+  PRIMARY KEY (`id`),
+  KEY `course_id` (`course_id`),
+  KEY `lecture_id` (`lecture_id`),
+  CONSTRAINT `assignments_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`),
+  CONSTRAINT `assignments_ibfk_2` FOREIGN KEY (`lecture_id`) REFERENCES `lectures` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Create Submissions table
-CREATE TABLE IF NOT EXISTS Submissions (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    assignmentId INT,
-    studentId INT,
-    content TEXT,
-    attachmentPath VARCHAR(255),
-    submissionDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    grade INT,
-    feedback TEXT,
-    isGraded BOOLEAN DEFAULT FALSE,
-    FOREIGN KEY (assignmentId) REFERENCES Assignments(id) ON DELETE CASCADE,
-    FOREIGN KEY (studentId) REFERENCES Users(idUser) ON DELETE CASCADE
-);
+CREATE TABLE `lectures` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `course_id` int DEFAULT NULL,
+  `title` varchar(100) NOT NULL,
+  `video_url` varchar(255) NOT NULL,
+  `status` varchar(100) DEFAULT 'pending',
+  `content` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `course_id` (`course_id`),
+  CONSTRAINT `lectures_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Create User Activity table
-CREATE TABLE IF NOT EXISTS UserActivity (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    userId INT,
-    activityType VARCHAR(50),
-    description TEXT,
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (userId) REFERENCES Users(idUser) ON DELETE CASCADE
-);
+CREATE TABLE `enrollments` (
+  `student_id` int NOT NULL,
+  `course_id` int NOT NULL,
+  `enrollment_date` datetime DEFAULT CURRENT_TIMESTAMP,
+  `status` varchar(100) DEFAULT 'active',
+  PRIMARY KEY (`student_id`,`course_id`),
+  KEY `course_id` (`course_id`),
+  CONSTRAINT `enrollments_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `enrollments_ibfk_2` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Create Chat History table for AI interactions
-CREATE TABLE IF NOT EXISTS ChatHistory (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    userId INT,
-    message TEXT,
-    response TEXT,
-    chatType VARCHAR(50),
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (userId) REFERENCES Users(idUser) ON DELETE CASCADE
-);
+CREATE TABLE `coursemetadata` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `course_id` int NOT NULL,
+  `estimated_hours` int NOT NULL DEFAULT '0',
+  `learning_outcomes` text,
+  `prerequisites` text,
+  `skill_level` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UK_e1o79kv0xbrn75unh2r8kknar` (`course_id`),
+  CONSTRAINT `FKetteyt2vjjinwm4ybqvwfc953` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Insert sample admin user (password: admin123)
-INSERT IGNORE INTO Users (username, password, email, role, fullName) VALUES
-('admin', '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRdvabm6dOwgaLyFSnfX6sMzqDy', 'admin@eduplatform.com', 'admin', 'System Administrator');
+CREATE TABLE `payments` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `vnp_TxnRef` varchar(255) NOT NULL,
+  `vnp_Amount` bigint NOT NULL,
+  `vnp_OrderInfo` text,
+  `vnp_ResponseCode` varchar(10) DEFAULT NULL,
+  `vnp_TransactionNo` varchar(255) DEFAULT NULL,
+  `vnp_BankCode` varchar(20) DEFAULT NULL,
+  `vnp_PayDate` varchar(20) DEFAULT NULL,
+  `user_id` int NOT NULL,
+  `course_id` int NOT NULL,
+  `payment_status` enum('PENDING','SUCCESS','FAILED','CANCELLED') DEFAULT 'PENDING',
+  `created_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `vnp_TxnRef` (`vnp_TxnRef`),
+  KEY `idx_payment_user` (`user_id`),
+  KEY `idx_payment_course` (`course_id`),
+  KEY `idx_payment_status` (`payment_status`),
+  KEY `idx_payment_created` (`created_date`),
+  CONSTRAINT `fk_payment_course` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_payment_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Insert sample teacher (password: teacher123)
-INSERT IGNORE INTO Users (username, password, email, role, fullName) VALUES
-('teacher1', '$2a$10$N.2E1msQ.UWY4uuJL24L/.YUH4Gd6pPTZ8WQD.ZEORrkkS4zG2k6O', 'teacher@eduplatform.com', 'teacher', 'John Smith');
+CREATE TABLE `submissions` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `assignment_id` int DEFAULT NULL,
+  `student_id` int DEFAULT NULL,
+  `file_url` varchar(255) DEFAULT NULL,
+  `submission_date` datetime DEFAULT NULL,
+  `grade` double DEFAULT NULL,
+  `lecture_id` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `assignment_id` (`assignment_id`),
+  KEY `student_id` (`student_id`),
+  KEY `FKt9l6kbbdem7sw7e6fprs48kag` (`lecture_id`),
+  CONSTRAINT `FKt9l6kbbdem7sw7e6fprs48kag` FOREIGN KEY (`lecture_id`) REFERENCES `lectures` (`id`),
+  CONSTRAINT `submissions_ibfk_1` FOREIGN KEY (`assignment_id`) REFERENCES `assignments` (`id`),
+  CONSTRAINT `submissions_ibfk_2` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Insert sample student (password: student123)
-INSERT IGNORE INTO Users (username, password, email, role, fullName) VALUES
-('student1', '$2a$10$JQcuFGZIkdK.UW.Oe6.6OO.rNk5yQKdGKFo6z7vTTr6zYmE9C1G4C', 'student@eduplatform.com', 'student', 'Jane Doe');
+CREATE TABLE `user_activity` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `login_time` datetime NOT NULL,
+  `logout_time` datetime DEFAULT NULL,
+  `duration_minutes` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `user_activity_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Insert sample courses
-INSERT IGNORE INTO Courses (name, description, teacherName, image, lectureCount, difficulty, category) VALUES
-('Introduction to Java Programming', 'Learn the fundamentals of Java programming from scratch', 'John Smith', 'javaf.png', 12, 'beginner', 'Programming'),
-('Web Development with JavaScript', 'Master modern JavaScript and web development techniques', 'John Smith', 'js.png', 15, 'intermediate', 'Web Development'),
-('Python for Data Science', 'Explore data science concepts using Python programming', 'John Smith', 'python.png', 18, 'intermediate', 'Data Science'),
-('Advanced Database Design', 'Learn advanced database concepts and optimization techniques', 'John Smith', 'c.png', 10, 'advanced', 'Database'),
-('Mobile App Development', 'Build mobile applications for iOS and Android platforms', 'John Smith', 'swift.png', 20, 'intermediate', 'Mobile Development');
+-- Insert sample data
+INSERT INTO `users` VALUES 
+(1,'admin','$2a$10$3zHz9B..F4T7Y3b2fG7q5e6J7Qz4z2b5q8L9W4m2T8F7Y3N4M6K2','admin@example.com','admin',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),
+(2,'teacher1','$2a$10$3zHz9B..F4T7Y3b2fG7q5e6J7Qz4z2b5q8L9W4m2T8F7Y3N4M6K2','teacher1@example.com','teacher',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),
+(3,'student1','$2a$10$3zHz9B..F4T7Y3b2fG7q5e6J7Qz4z2b5q8L9W4m2T8F7Y3N4M6K2','student1@example.com','student',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
 
--- Insert sample lectures for Java course
-INSERT IGNORE INTO Lectures (title, content, videoUrl, courseId, lectureOrder, duration) VALUES
-('Introduction to Java', 'Welcome to Java programming. In this lecture, we will cover the basics of Java.', 'https://example.com/java-intro', 1, 1, 45),
-('Variables and Data Types', 'Learn about different data types and how to declare variables in Java.', 'https://example.com/java-variables', 1, 2, 50),
-('Control Structures', 'Understanding if-else statements, loops, and switch cases in Java.', 'https://example.com/java-control', 1, 3, 55);
+INSERT INTO `courses` VALUES 
+(1,'Python Basics','Introduction to Python programming',2,'image/python.png','beginner','Programming',12,0.00),
+(2,'Java Fundamentals','Core concepts of Java',2,'image/javaf.png','beginner','Programming',10,0.00),
+(3,'C++ Programming','Advanced C++ techniques',2,'image/c.png','intermediate','Programming',14,0.00),
+(4,'JavaScript Essentials','Basics of JavaScript',2,'image/js.png','beginner','Web Development',8,0.00),
+(5,'Ruby on Rails','Web development with Ruby',2,'image/ra.png','intermediate','Web Development',16,0.00),
+(6,'PHP Basics','Introduction to PHP',2,'image/php.png','beginner','Web Development',9,0.00),
+(7,'Go Programming','Learning Go language',2,'image/go.png','intermediate','Programming',11,0.00),
+(8,'Swift for iOS','iOS development with Swift',2,'image/swift.png','intermediate','Mobile Development',18,0.00),
+(9,'Advanced Machine Learning with Python','Master advanced ML algorithms, deep learning, and AI applications with hands-on projects. Expert-level course with premium content including neural networks, computer vision, and NLP.',2,'image/python.png','advanced','Machine Learning',25,299000.00),
+(10,'Rust Programming','Safe and concurrent Rust',2,'image/Rus.png','advanced','Programming',15,0.00);
+
+INSERT INTO `lectures` VALUES 
+(1,1,'Introduction to Python','https://www.youtube.com/watch?v=kqtD5dpn9C8','active','Learn Python programming fundamentals including variables, data types, control structures, and functions. Perfect for beginners starting their programming journey.'),
+(2,2,'Java Basics','https://www.youtube.com/watch?v=RRubcjpTkks','active','Master Java programming basics including object-oriented programming concepts, classes, methods, and Java syntax fundamentals.');
+
+-- Show completion message
+SELECT 'Database initialization completed successfully!' AS MESSAGE;
 
 -- Insert sample assignments
 INSERT IGNORE INTO Assignments (title, description, courseId, dueDate, maxPoints) VALUES
@@ -148,3 +201,8 @@ CREATE INDEX IF NOT EXISTS idx_submissions_assignment ON Submissions(assignmentI
 CREATE INDEX IF NOT EXISTS idx_submissions_student ON Submissions(studentId);
 CREATE INDEX IF NOT EXISTS idx_activity_user ON UserActivity(userId);
 CREATE INDEX IF NOT EXISTS idx_chat_user ON ChatHistory(userId);
+CREATE INDEX IF NOT EXISTS idx_payment_user ON Payments(user_id);
+CREATE INDEX IF NOT EXISTS idx_payment_course ON Payments(course_id);
+CREATE INDEX IF NOT EXISTS idx_payment_status ON Payments(payment_status);
+CREATE INDEX IF NOT EXISTS idx_payment_txnref ON Payments(vnp_TxnRef);
+CREATE INDEX IF NOT EXISTS idx_payment_created ON Payments(created_date);

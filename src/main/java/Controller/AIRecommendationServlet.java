@@ -280,7 +280,7 @@ public class AIRecommendationServlet extends HttpServlet {
     private String callOllamaAPI(String prompt) throws Exception {
         String ollamaUrl = "http://localhost:11434/api/generate";
         JSONObject payload = new JSONObject();
-        payload.put("model", "llama3");
+        payload.put("model", "llama3:latest");
         payload.put("prompt", prompt);
         payload.put("stream", false);
         

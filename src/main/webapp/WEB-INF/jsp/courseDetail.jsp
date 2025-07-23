@@ -43,13 +43,53 @@
         <div class="row">
             <!-- Course Information Section -->
             <div class="col-md-6">
-                <h1 class="display-4 fw-bold mb-3">${course.name}</h1>
+                <div class="d-flex align-items-center mb-3">
+                    <h1 class="display-4 fw-bold mb-0 me-3">${course.name}</h1>
+                    <div class="d-flex flex-column gap-2">
+                        <!-- Difficulty Badge -->
+                        <c:choose>
+                            <c:when test="${course.difficulty == 'beginner'}">
+                                <span class="badge bg-success fs-6 px-3 py-2">
+                                    <i class="bi bi-circle-fill me-1"></i>BEGINNER
+                                </span>
+                            </c:when>
+                            <c:when test="${course.difficulty == 'intermediate'}">
+                                <span class="badge bg-primary fs-6 px-3 py-2">
+                                    <i class="bi bi-circle-half me-1"></i>INTERMEDIATE
+                                </span>
+                            </c:when>
+                            <c:when test="${course.difficulty == 'advanced'}">
+                                <span class="badge bg-danger fs-6 px-3 py-2">
+                                    <i class="bi bi-triangle-fill me-1"></i>ADVANCED
+                                </span>
+                            </c:when>
+                        </c:choose>
+                        
+                        <!-- Premium Badge -->
+                        <c:if test="${course.difficulty == 'advanced' && course.idCourse == 9}">
+                            <span class="badge bg-warning text-dark fs-6 px-3 py-2">
+                                <i class="bi bi-star-fill me-1"></i>PREMIUM
+                            </span>
+                        </c:if>
+                    </div>
+                </div>
                 
                 <div class="mb-4">
                     <h5 class="text-muted">
                         <i class="bi bi-person-fill me-2"></i>
                         Instructor: ${course.teacherName}
                     </h5>
+                    <c:if test="${not empty course.category}">
+                        <small class="text-primary">
+                            <i class="bi bi-tag-fill me-1"></i>Category: ${course.category}
+                        </small>
+                    </c:if>
+                    <br>
+                    <c:if test="${course.difficulty == 'advanced' && course.idCourse == 9}">
+                        <small class="text-warning">
+                            <i class="bi bi-patch-check-fill me-1"></i>Expert Instructor • Advanced Content
+                        </small>
+                    </c:if>
                 </div>
                 
                 <div class="mb-4">
@@ -65,6 +105,27 @@
                             <strong>Total Lectures:</strong> ${course.lectureCount}
                         </li>
                         <li class="mb-2">
+                            <i class="bi bi-speedometer2 me-2 text-info"></i>
+                            <strong>Difficulty Level:</strong> 
+                            <c:choose>
+                                <c:when test="${course.difficulty == 'beginner'}">
+                                    <span class="text-success">Beginner</span>
+                                </c:when>
+                                <c:when test="${course.difficulty == 'intermediate'}">
+                                    <span class="text-primary">Intermediate</span>
+                                </c:when>
+                                <c:when test="${course.difficulty == 'advanced'}">
+                                    <span class="text-danger">Advanced</span>
+                                </c:when>
+                            </c:choose>
+                        </li>
+                        <c:if test="${not empty course.category}">
+                            <li class="mb-2">
+                                <i class="bi bi-tag-fill me-2 text-secondary"></i>
+                                <strong>Category:</strong> ${course.category}
+                            </li>
+                        </c:if>
+                        <li class="mb-2">
                             <i class="bi bi-clock-fill me-2 text-success"></i>
                             <strong>Duration:</strong> Self-paced
                         </li>
@@ -72,6 +133,20 @@
                             <i class="bi bi-award-fill me-2 text-warning"></i>
                             <strong>Certificate:</strong> Available upon completion
                         </li>
+                        <c:if test="${course.difficulty == 'advanced' && course.idCourse == 9}">
+                            <li class="mb-2">
+                                <i class="bi bi-laptop me-2 text-info"></i>
+                                <strong>Premium Content:</strong> Hands-on projects included
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-headset me-2 text-primary"></i>
+                                <strong>Support:</strong> Direct instructor access
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-download me-2 text-success"></i>
+                                <strong>Resources:</strong> Downloadable materials & code
+                            </li>
+                        </c:if>
                     </ul>
                 </div>
                 
@@ -93,15 +168,45 @@
                             </a>
                         </c:when>
                         <c:otherwise>
-                            <!-- Logged in but not enrolled - Enroll Button -->
-                            <form action="${pageContext.request.contextPath}/course" method="post" class="d-inline">
-                                <input type="hidden" name="action" value="enroll">
-                                <input type="hidden" name="courseId" value="${course.idCourse}">
-                                <button type="submit" class="btn btn-primary btn-lg w-100">
-                                    <i class="bi bi-bookmark-plus-fill me-2"></i>
-                                    Enroll Now (Free)
-                                </button>
-                            </form>
+                            <!-- Logged in but not enrolled -->
+                            <c:choose>
+                                <c:when test="${course.idCourse == 9}">
+                                    <!-- Premium Course - Payment Required -->
+                                    <div class="card border-warning mb-3">
+                                        <div class="card-body text-center">
+                                            <h5 class="card-title text-warning">
+                                                <i class="bi bi-star-fill me-2"></i>Premium Course
+                                            </h5>
+                                            <p class="card-text text-muted">
+                                                This is an advanced course with premium content and features.
+                                            </p>
+                                            <h4 class="text-success mb-3">299,000 VND</h4>
+                                        </div>
+                                    </div>
+                                    
+                                    <a href="${pageContext.request.contextPath}/payment?courseId=${course.idCourse}" 
+                                       class="btn btn-warning btn-lg mb-2">
+                                        <i class="bi bi-credit-card me-2"></i>
+                                        Enroll with Payment - 299,000 VND
+                                    </a>
+                                    
+                                    <small class="text-muted d-block text-center">
+                                        <i class="bi bi-shield-check me-1"></i>
+                                        Secure payment with VNPay • 30-day money back guarantee
+                                    </small>
+                                </c:when>
+                                <c:otherwise>
+                                    <!-- Free Course - Direct Enrollment -->
+                                    <form action="${pageContext.request.contextPath}/course" method="post" class="d-inline">
+                                        <input type="hidden" name="action" value="enroll">
+                                        <input type="hidden" name="courseId" value="${course.idCourse}">
+                                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                                            <i class="bi bi-bookmark-plus-fill me-2"></i>
+                                            Enroll Now (Free)
+                                        </button>
+                                    </form>
+                                </c:otherwise>
+                            </c:choose>
                         </c:otherwise>
                     </c:choose>
                 </div>

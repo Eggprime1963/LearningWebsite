@@ -35,7 +35,7 @@ public class GradeAssServlet extends HttpServlet {
         System.out.println("Session exists: " + (session != null) + ", Role: " + (session != null ? session.getAttribute("role") : "null"));
         if (session == null || !"teacher".equals(session.getAttribute("role"))) {
             System.out.println("Redirecting to signIn.jsp due to invalid session/role");
-            response.sendRedirect("/WEB-INF/jsp/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
@@ -83,12 +83,12 @@ public class GradeAssServlet extends HttpServlet {
                 request.setAttribute("assignment", allAssignments.get(0));
             }
 
-            request.getRequestDispatcher("/WEB_INF/jsp/gradeAssignments.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/gradeAssignments.jsp").forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Exception occurred: " + e.getMessage());
             request.setAttribute("error", "Error retrieving submissions: " + e.getMessage());
-            request.getRequestDispatcher("/WEB_INF/jsp/gradeAssignments.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/gradeAssignments.jsp").forward(request, response);
         }
     }
 
@@ -99,7 +99,7 @@ public class GradeAssServlet extends HttpServlet {
         System.out.println("Session exists in POST: " + (session != null) + ", Role: " + (session != null ? session.getAttribute("role") : "null"));
         if (session == null || !"teacher".equals(session.getAttribute("role"))) {
             System.out.println("Redirecting to signIn.jsp in POST due to invalid session/role");
-            response.sendRedirect("WEB_INF/jsp/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
@@ -114,7 +114,7 @@ public class GradeAssServlet extends HttpServlet {
             e.printStackTrace();
             System.out.println("Exception in POST: " + e.getMessage());
             request.setAttribute("error", "Failed to grade submission: " + e.getMessage());
-            request.getRequestDispatcher("/WEB_INF/jsp/gradeAssignments.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/jsp/gradeAssignments.jsp").forward(request, response);
         }
     }
 }

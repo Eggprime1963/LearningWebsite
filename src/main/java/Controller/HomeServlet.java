@@ -67,6 +67,13 @@ public class HomeServlet extends HttpServlet {
                     Long lectureCount = (Long) row[2];
                     course.setTeacherName(teacherName);
                     course.setLectureCount(lectureCount);
+                    
+                    // Check enrollment status for this course if user is logged in
+                    if (currentUser != null) {
+                        boolean isEnrolled = enrollmentDAO.isUserEnrolledInCourse(currentUser.getId(), course.getIdCourse());
+                        course.setEnrolled(isEnrolled);
+                    }
+                    
                     courses.add(course);
                 }
                 
@@ -261,7 +268,7 @@ public class HomeServlet extends HttpServlet {
     private String callOllamaAPI(String prompt) throws Exception {
         String ollamaUrl = "http://localhost:11434/api/generate";
         JSONObject payload = new JSONObject();
-        payload.put("model", "llama3");
+        payload.put("model", "llama3:latest");
         payload.put("prompt", prompt);
         payload.put("stream", false);
         

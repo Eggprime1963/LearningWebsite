@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
@@ -182,13 +183,28 @@
                 
                 <!-- All Courses Section -->
                 <div class="all-courses-section">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h2>All Courses</h2>
+                    <!-- Course Filter Section -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h2 class="mb-0">All Courses</h2>
+                            <small class="text-muted" id="resultsCounter">
+                                <i class="bi bi-collection me-1"></i>
+                                Showing <span id="courseCount">${courses.size()}</span> courses
+                            </small>
+                        </div>
                         <div class="course-filters">
-                            <button class="btn btn-sm btn-outline-secondary me-2" data-filter="all">All</button>
-                            <button class="btn btn-sm btn-outline-secondary me-2" data-filter="beginner">Beginner</button>
-                            <button class="btn btn-sm btn-outline-secondary me-2" data-filter="intermediate">Intermediate</button>
-                            <button class="btn btn-sm btn-outline-secondary" data-filter="advanced">Advanced</button>
+                            <button class="btn btn-sm btn-primary me-2 filter-btn" data-filter="all">
+                                <i class="bi bi-collection me-1"></i>All
+                            </button>
+                            <button class="btn btn-sm btn-outline-success me-2 filter-btn filter-btn-beginner" data-filter="beginner">
+                                <i class="bi bi-circle-fill me-1"></i>Beginner
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary me-2 filter-btn filter-btn-intermediate" data-filter="intermediate">
+                                <i class="bi bi-circle-half me-1"></i>Intermediate
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger filter-btn filter-btn-advanced" data-filter="advanced">
+                                <i class="bi bi-triangle-fill me-1"></i>Advanced
+                            </button>
                         </div>
                     </div>
                     
@@ -198,45 +214,154 @@
                     
                     <div class="row" id="coursesContainer">
                         <c:forEach var="course" items="${courses}">
-                            <div class="col-md-4 mb-4 course-item" data-level="beginner">
-                                <div class="card course-card h-100">
-                                    <img src="${pageContext.request.contextPath}/${course.image}" 
-                                         class="card-img-top" 
-                                         alt="${course.name}" 
-                                         onerror="this.src=''"
-                                         style="width: 100%; height: 200px; object-fit: cover;">
-                                    <div class="card-body d-flex flex-column">
-                                        <h5 class="card-title">${course.name}</h5>
-                                        <p class="card-text flex-grow-1">${course.description}</p>
+                            <div class="col-md-4 mb-4 course-item" data-level="${course.difficulty}">
+                                <div class="card course-card h-100 shadow-sm border-0">
+                                    <div class="position-relative">
+                                        <c:choose>
+                                            <c:when test="${not empty course.image}">
+                                                <img src="${pageContext.request.contextPath}/${course.image}" 
+                                                     class="card-img-top" 
+                                                     alt="${course.name}"
+                                                     style="height: 200px; object-fit: cover;">
+                                            </c:when>
+                                            <c:otherwise>
+                                                <div class="card-img-top d-flex align-items-center justify-content-center bg-light" 
+                                                     style="height: 200px;">
+                                                    <i class="bi bi-book text-muted" style="font-size: 3rem;"></i>
+                                                </div>
+                                            </c:otherwise>
+                                        </c:choose>
                                         
-                                        <div class="course-meta mb-3">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <span class="text-muted small">
-                                                    <i class="bi bi-play-circle me-1"></i>
-                                                    ${course.lectureCount} lessons
-                                                </span>
-                                                <c:if test="${not empty course.teacherName}">
-                                                    <span class="text-muted small">
-                                                        <i class="bi bi-person me-1"></i>
-                                                        ${course.teacherName}
+                                        <!-- Difficulty Badge -->
+                                        <div class="position-absolute top-0 start-0 m-2">
+                                            <c:choose>
+                                                <c:when test="${course.difficulty == 'beginner'}">
+                                                    <span class="badge bg-success px-2 py-1">
+                                                        <i class="bi bi-circle-fill me-1"></i>Beginner
                                                     </span>
+                                                </c:when>
+                                                <c:when test="${course.difficulty == 'intermediate'}">
+                                                    <span class="badge bg-primary px-2 py-1">
+                                                        <i class="bi bi-circle-half me-1"></i>Intermediate
+                                                    </span>
+                                                </c:when>
+                                                <c:when test="${course.difficulty == 'advanced'}">
+                                                    <span class="badge bg-danger px-2 py-1">
+                                                        <i class="bi bi-triangle-fill me-1"></i>Advanced
+                                                    </span>
+                                                </c:when>
+                                            </c:choose>
+                                        </div>
+                                        
+                                        <!-- Premium Badge -->
+                                        <c:if test="${course.price > 0}">
+                                            <div class="position-absolute top-0 end-0 m-2">
+                                                <span class="badge bg-warning text-dark px-2 py-1">
+                                                    <i class="bi bi-star-fill me-1"></i>PREMIUM
+                                                </span>
+                                            </div>
+                                        </c:if>
+                                    </div>
+                                    
+                                    <div class="card-body d-flex flex-column">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h5 class="card-title fw-bold mb-0">${course.name}</h5>
+                                            <c:if test="${not empty course.category}">
+                                                <small class="text-muted badge bg-light text-dark">${course.category}</small>
+                                            </c:if>
+                                        </div>
+                                        <p class="card-text text-muted flex-grow-1">${course.description}</p>
+                                        
+                                        <div class="mt-auto">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <small class="text-muted">
+                                                    <i class="bi bi-play-circle me-1"></i>
+                                                    ${course.lectureCount} lectures
+                                                </small>
+                                                <c:choose>
+                                                    <c:when test="${course.price > 0}">
+                                                        <small class="text-warning fw-bold">
+                                                            <fmt:formatNumber value="${course.price}" type="currency" currencyCode="VND" />
+                                                        </small>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <small class="text-success fw-bold">Free</small>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </div>
+                                            
+                                            <c:if test="${not empty sessionScope.username}">
+                                                <div class="progress progress-container mb-2">
+                                                    <div class="progress-bar" role="progressbar" style="width: 50%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">50%</div>
+                                                </div>
+                                            </c:if>
+                                            
+                                            <div class="d-grid gap-2">
+                                                <c:choose>
+                                                    <c:when test="${course.price > 0}">
+                                                        <!-- Premium course - different styling -->
+                                                        <a href="${pageContext.request.contextPath}/course?courseId=${course.idCourse}" 
+                                                           class="btn btn-warning">
+                                                            <i class="bi bi-star-fill me-2"></i>View Premium Course
+                                                        </a>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <!-- Regular course -->
+                                                        <c:if test="${not empty sessionScope.username}">
+                                                            <c:choose>
+                                                                <c:when test="${course.enrolled}">
+                                                                    <a href="${pageContext.request.contextPath}/course?courseId=${course.idCourse}" class="btn btn-primary">
+                                                                        <i class="bi bi-play-circle me-2"></i>Continue Learning
+                                                                    </a>
+                                                                </c:when>
+                                                                <c:otherwise>
+                                                                    <a href="${pageContext.request.contextPath}/course?courseId=${course.idCourse}" class="btn btn-success">
+                                                                        <i class="bi bi-plus-circle me-2"></i>Start Course
+                                                                    </a>
+                                                                </c:otherwise>
+                                                            </c:choose>
+                                                        </c:if>
+                                                        <c:if test="${empty sessionScope.username}">
+                                                            <a href="${pageContext.request.contextPath}/course?courseId=${course.idCourse}" class="btn btn-outline-primary">
+                                                                <i class="bi bi-eye me-2"></i>View Course Details
+                                                            </a>
+                                                        </c:if>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                                
+                                                <c:if test="${course.price > 0}">
+                                                    <c:choose>
+                                                        <c:when test="${not empty sessionScope.username}">
+                                                            <a href="${pageContext.request.contextPath}/payment?courseId=${course.idCourse}" 
+                                                               class="btn btn-success">
+                                                                <i class="bi bi-credit-card me-2"></i>Enroll Now - 
+                                                                <fmt:formatNumber value="${course.price}" type="currency" currencyCode="VND" />
+                                                            </a>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <a href="${pageContext.request.contextPath}/login" 
+                                                               class="btn btn-outline-success">
+                                                                <i class="bi bi-box-arrow-in-right me-2"></i>Login to Enroll
+                                                            </a>
+                                                        </c:otherwise>
+                                                    </c:choose>
                                                 </c:if>
                                             </div>
                                         </div>
-        
-                                        <c:if test="${not empty sessionScope.username}">
-                                            <div class="progress progress-container mb-2">
-                                                <div class="progress-bar" role="progressbar" style="width: 50%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">50%</div>
-                                            </div>
-                                            <a href="${pageContext.request.contextPath}/course?courseId=${course.idCourse}" class="btn btn-primary mt-auto">Continue Learning</a>
-                                        </c:if>
-                                        <c:if test="${empty sessionScope.username}">
-                                            <a href="${pageContext.request.contextPath}/course?courseId=${course.idCourse}" class="btn btn-outline-primary mt-auto">View Course Details</a>
-                                        </c:if>
                                     </div>
                                 </div>
                             </div>
                         </c:forEach>
+                        
+                        <c:if test="${empty courses}">
+                            <div class="col-12">
+                                <div class="text-center py-5">
+                                    <i class="bi bi-book text-muted" style="font-size: 4rem;"></i>
+                                    <h3 class="mt-3 text-muted">No courses available</h3>
+                                    <p class="text-muted">Check back later for new courses!</p>
+                                </div>
+                            </div>
+                        </c:if>
                     </div>
                 </div>
             </div>
@@ -251,41 +376,101 @@
     <!-- Enhanced Homepage JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Course filtering functionality
-            const filterButtons = document.querySelectorAll('[data-filter]');
+            // Course filtering functionality (exact copy from browse.jsp)
+            const filterButtons = document.querySelectorAll('.filter-btn[data-filter]');
             const courseItems = document.querySelectorAll('.course-item');
+            
+            // Initialize all courses as visible
+            courseItems.forEach(item => {
+                item.classList.add('filtered-in');
+            });
             
             filterButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     const filter = this.dataset.filter;
                     
-                    // Update active button
-                    filterButtons.forEach(btn => btn.classList.remove('btn-primary'));
-                    filterButtons.forEach(btn => btn.classList.add('btn-outline-secondary'));
-                    this.classList.remove('btn-outline-secondary');
-                    this.classList.add('btn-primary');
-                    
-                    // Filter courses
-                    courseItems.forEach(item => {
-                        if (filter === 'all' || item.dataset.level === filter) {
-                            item.style.display = 'block';
-                        } else {
-                            item.style.display = 'none';
+                    // Update active button state
+                    filterButtons.forEach(btn => {
+                        btn.classList.remove('active');
+                        if (btn.dataset.filter === 'all') {
+                            btn.classList.remove('btn-primary');
+                            btn.classList.add('btn-outline-secondary');
                         }
                     });
+                    
+                    // Set active state for clicked button
+                    this.classList.add('active');
+                    if (filter === 'all') {
+                        this.classList.remove('btn-outline-secondary');
+                        this.classList.add('btn-primary');
+                    }
+                    
+                    // Filter courses with animation
+                    courseItems.forEach(item => {
+                        const courseLevel = item.dataset.level;
+                        
+                        if (filter === 'all' || courseLevel === filter) {
+                            // Show course
+                            item.classList.remove('filtered-out');
+                            item.classList.add('filtered-in');
+                            item.style.display = 'block';
+                        } else {
+                            // Hide course
+                            item.classList.remove('filtered-in');
+                            item.classList.add('filtered-out');
+                            setTimeout(() => {
+                                if (item.classList.contains('filtered-out')) {
+                                    item.style.display = 'none';
+                                }
+                            }, 300);
+                        }
+                    });
+                    
+                    // Update results count with a slight delay for better UX
+                    setTimeout(() => {
+                        const visibleCourses = document.querySelectorAll('.course-item.filtered-in').length;
+                        updateResultsCount(visibleCourses, filter);
+                    }, 100);
                 });
             });
+            
+            // Function to update results count
+            function updateResultsCount(count, filter) {
+                const filterName = filter === 'all' ? 'All Courses' : 
+                                 filter.charAt(0).toUpperCase() + filter.slice(1) + ' Courses';
+                
+                const courseCountElement = document.getElementById('courseCount');
+                const resultsCounter = document.getElementById('resultsCounter');
+                
+                if (courseCountElement) {
+                    courseCountElement.textContent = count;
+                }
+                
+                if (resultsCounter) {
+                    const icon = filter === 'all' ? 'bi-collection' : 
+                                filter === 'beginner' ? 'bi-circle-fill' :
+                                filter === 'intermediate' ? 'bi-circle-half' : 'bi-triangle-fill';
+                    
+                    const courseText = filter === 'all' ? 'courses' : filter + ' courses';
+                    
+                    resultsCounter.innerHTML = 
+                        '<i class="' + icon + ' me-1"></i>' +
+                        'Showing <span id="courseCount">' + count + '</span> ' + courseText;
+                }
+            }
             
             // Enhanced course card interactions
             const courseCards = document.querySelectorAll('.course-card');
             courseCards.forEach(card => {
                 card.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-5px)';
-                    this.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)';
+                    if (!this.closest('.course-item').classList.contains('filtered-out')) {
+                        this.style.transform = 'translateY(-5px)';
+                        this.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
+                    }
                 });
                 
                 card.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateY(0)';
+                    this.style.transform = '';
                     this.style.boxShadow = '';
                 });
             });
@@ -333,6 +518,112 @@
     
     <!-- Additional AI-Enhanced Styling -->
     <style>
+        /* Custom CSS for course filter buttons with hover effects matching difficulty colors (copied from browse.jsp) */
+        .filter-btn {
+            transition: all 0.3s ease;
+            border-width: 2px;
+        }
+        
+        .filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .filter-btn-beginner:hover {
+            background-color: #198754 !important;
+            border-color: #198754 !important;
+            color: white !important;
+        }
+        
+        .filter-btn-intermediate:hover {
+            background-color: #0d6efd !important;
+            border-color: #0d6efd !important;
+            color: white !important;
+        }
+        
+        .filter-btn-advanced:hover {
+            background-color: #dc3545 !important;
+            border-color: #dc3545 !important;
+            color: white !important;
+        }
+        
+        /* Active states */
+        .filter-btn.active.filter-btn-beginner {
+            background-color: #198754 !important;
+            border-color: #198754 !important;
+            color: white !important;
+        }
+        
+        .filter-btn.active.filter-btn-intermediate {
+            background-color: #0d6efd !important;
+            border-color: #0d6efd !important;
+            color: white !important;
+        }
+        
+        .filter-btn.active.filter-btn-advanced {
+            background-color: #dc3545 !important;
+            border-color: #dc3545 !important;
+            color: white !important;
+        }
+        
+        /* Course card animations */
+        .course-item {
+            transition: all 0.3s ease;
+        }
+        
+        .course-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+        }
+        
+        /* Filter animation effects */
+        .course-item.filtered-out {
+            opacity: 0;
+            transform: scale(0.8);
+            pointer-events: none;
+        }
+        
+        .course-item.filtered-in {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+        
+        /* Responsive design for filters */
+        @media (max-width: 768px) {
+            .d-flex.justify-content-between {
+                flex-direction: column;
+                align-items: flex-start !important;
+            }
+            
+            .course-filters {
+                margin-top: 1rem;
+                width: 100%;
+            }
+            
+            .filter-btn {
+                margin-bottom: 0.5rem;
+                width: 48%;
+                margin-right: 2% !important;
+            }
+            
+            .filter-btn:nth-child(even) {
+                margin-right: 0 !important;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .filter-btn {
+                width: 100%;
+                margin-right: 0 !important;
+                margin-bottom: 0.5rem;
+            }
+        }
+
         .ai-featured-section {
             background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%);
             border-radius: 15px;
@@ -370,19 +661,9 @@
             }
         }
         
-        .course-card {
-            transition: all 0.3s ease;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        
         .course-meta {
             border-top: 1px solid #f0f0f0;
             padding-top: 0.75rem;
-        }
-        
-        .course-filters .btn {
-            transition: all 0.2s ease;
         }
         
         .badge.bg-gradient-primary {
@@ -391,24 +672,6 @@
         
         .ai-notification {
             animation: slideInFromRight 0.5s ease-out;
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .ai-featured-section {
-                padding: 1rem;
-            }
-            
-            .course-filters {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 0.5rem;
-            }
-            
-            .course-filters .btn {
-                font-size: 0.8rem;
-                padding: 0.25rem 0.5rem;
-            }
         }
     </style>
 </body>

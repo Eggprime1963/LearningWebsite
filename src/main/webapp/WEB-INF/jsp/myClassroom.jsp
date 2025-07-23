@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <title>My Classroom</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/classroom.css"/>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </head>
@@ -56,25 +57,34 @@
                                             <h5 class="card-title">${c.name}</h5>
                                             <p class="card-text">${c.description}</p>
                                             <div class="mt-auto">
-                                                <c:if test="${section == 'courses'}">
-                                                    <div class="row g-4">
-                                                        <c:forEach var="course" items="${courses}">
-                                                            <div class="col-md-6 col-lg-4">
-                                                                <a href="${pageContext.request.contextPath}/lectures?courseId=${course.idCourse}" class="btn btn-primary">
-                                                                    View Course
-                                                                </a>
-                                                            </div>
-                                                        </c:forEach>
-                                                    </div>
-                                                </c:if>
-                                                <c:if test="${canCrud}">
-                                                    <button class="btn btn-warning btn-sm mb-2" onclick="openEditModal('${c.idCourse}', '${c.name}', '${c.description}')">Edit</button>
-                                                    <form action="${pageContext.request.contextPath}/courses" method="post" style="display:inline;">
-                                                        <input type="hidden" name="action" value="delete">
-                                                        <input type="hidden" name="courseId" value="${c.idCourse}">
-                                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
-                                                    </form>
-                                                </c:if>
+                                                <div class="d-flex flex-column gap-2">
+                                                    <!-- Navigation Buttons -->
+                                                    <a href="${pageContext.request.contextPath}/lectures?courseId=${c.idCourse}" class="btn btn-primary btn-sm">
+                                                        <i class="bi bi-play-circle me-1"></i>View Lectures
+                                                    </a>
+                                                    <a href="${pageContext.request.contextPath}/myClassroom?section=assignments&courseId=${c.idCourse}" class="btn btn-info btn-sm">
+                                                        <i class="bi bi-file-text me-1"></i>View Assignments
+                                                    </a>
+                                                    <a href="${pageContext.request.contextPath}/course?courseId=${c.idCourse}" class="btn btn-success btn-sm">
+                                                        <i class="bi bi-book me-1"></i>Course Details
+                                                    </a>
+                                                    
+                                                    <!-- Admin Controls -->
+                                                    <c:if test="${canCrud}">
+                                                        <div class="border-top pt-2 mt-2">
+                                                            <button class="btn btn-warning btn-sm mb-1 w-100" onclick="openEditModal('${c.idCourse}', '${c.name}', '${c.description}')">
+                                                                <i class="bi bi-pencil me-1"></i>Edit Course
+                                                            </button>
+                                                            <form action="${pageContext.request.contextPath}/courses" method="post" style="display:inline;">
+                                                                <input type="hidden" name="action" value="delete">
+                                                                <input type="hidden" name="courseId" value="${c.idCourse}">
+                                                                <button type="submit" class="btn btn-danger btn-sm w-100" onclick="return confirm('Are you sure?')">
+                                                                    <i class="bi bi-trash me-1"></i>Delete Course
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </c:if>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -193,6 +203,38 @@
             </div>
             <div class="modal-footer">
                 <button type="submit" class="btn btn-success">Save</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <form action="${pageContext.request.contextPath}/courses" method="post" class="modal-content">
+            <input type="hidden" name="action" value="update">
+            <input type="hidden" name="courseId" id="editId">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Edit Course</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label>Course Name</label>
+                    <input type="text" class="form-control" name="name" id="editName" required>
+                </div>
+                <div class="mb-3">
+                    <label>Description</label>
+                    <textarea class="form-control" name="description" id="editDescription" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label>Thumbnail URL</label>
+                    <input type="text" class="form-control" name="thumbnail" id="editThumbnail">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-warning">Update Course</button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
             </div>
         </form>

@@ -63,7 +63,7 @@
     </style>
 </head>
 <body>
-     <jsp:include page="/view/navbar.jsp" />
+     <jsp:include page="navbar.jsp" />
     <div class="container">
         <h2>Student List for My Courses</h2>
 
