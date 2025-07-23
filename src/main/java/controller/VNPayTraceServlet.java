@@ -152,6 +152,26 @@ public class VNPayTraceServlet extends HttpServlet {
             out.println("<p><strong>Problem:</strong> Hash secret mismatch</p>");
             out.println("<p><strong>Solution:</strong> Verify VNP_HASHSECRET in VNPayConfig.java</p>");
             out.println("</div>");
+            
+            out.println("<div style='background: #fff0f0; padding: 15px; border-radius: 5px; margin-top: 15px;'>");
+            out.println("<h4>🚨 CSP Console Warnings & Error Code 71</h4>");
+            out.println("<p><strong>Problem:</strong> VNPay's error page has malformed Content-Security-Policy headers</p>");
+            out.println("<p><strong>Browser Console Errors:</strong></p>");
+            out.println("<pre style='font-size: 12px; color: #666; background: #f5f5f5; padding: 8px; border-radius: 3px;'>");
+            out.println("The Content-Security-Policy directive 'default-src' contains 'style-src'...");
+            out.println("The Content-Security-Policy directive 'default-src' contains 'img-src'...");
+            out.println("Error.html:29 [Deprecation] -ms-high-contrast is deprecated");
+            out.println("</pre>");
+            out.println("<p><strong>Root Cause:</strong> VNPay's server sends malformed CSP headers like:</p>");
+            out.println("<code style='background: #f5f5f5; padding: 2px 4px; border-radius: 3px;'>default-src 'self' style-src 'unsafe-inline' img-src data:</code>");
+            out.println("<p><strong>Solutions:</strong></p>");
+            out.println("<ol>");
+            out.println("<li><strong>Safe to ignore:</strong> These are VNPay's server-side issues, not your application</li>");
+            out.println("<li><strong>Error Code 71:</strong> Usually indicates domain not approved by VNPay</li>");
+            out.println("<li><strong>For Testing:</strong> Use localhost:8080 or contact VNPay for domain approval</li>");
+            out.println("<li><strong>Production:</strong> Submit domain approval request to VNPay support</li>");
+            out.println("</ol>");
+            out.println("</div>");
         }
         
         out.println("<hr>");
@@ -207,7 +227,9 @@ public class VNPayTraceServlet extends HttpServlet {
             case "24": return "Transaction cancelled by user";
             case "51": return "Insufficient account balance";
             case "65": return "Exceeded daily transaction limit";
+            case "71": return "Domain/Return URL not approved by VNPay (CSP errors may appear)";
             case "75": return "Bank is under maintenance";
+            case "79": return "Transaction amount exceeds limit";
             case "97": return "Invalid signature (checksum error)";
             default: return "Unknown response code: " + code;
         }
