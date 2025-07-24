@@ -268,7 +268,7 @@ public class EnhancedAIService {
         }
         // Fallback to hardcoded key if environment variable not set
         if (key == null || key.isEmpty()) {
-            key = "AIzaSyA8_WlPLW-vnYwFCJ7lXCOgbn5k1c0iePI";
+            key = "key_here";
         }
         return key;
     }
