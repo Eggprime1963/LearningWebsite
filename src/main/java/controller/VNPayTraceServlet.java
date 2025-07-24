@@ -50,37 +50,21 @@ public class VNPayTraceServlet extends HttpServlet {
         
         out.println("<h1>🔍 VNPay Response Tracer</h1>");
         
-        // Display current VNPay configuration with enhanced return URL info
+        // Display current VNPay configuration
         out.println("<h2>📋 Current VNPay Configuration</h2>");
         out.println("<table>");
         out.println("<tr><th>Parameter</th><th>Value</th><th>Status</th></tr>");
         out.println("<tr><td>VNP_TMNCODE</td><td>" + VNPayConfig.VNP_TMNCODE + "</td><td class='info'>✓ Configured</td></tr>");
         out.println("<tr><td>VNP_URL</td><td>" + VNPayConfig.VNP_URL + "</td><td class='info'>✓ Sandbox</td></tr>");
-        
-        // Enhanced return URL validation
-        String returnUrlStatus = VNPayConfig.validateReturnUrl() ? 
-            "<span class='success'>✓ Valid Format</span>" : 
-            "<span class='error'>❌ Invalid Format</span>";
-        out.println("<tr><td>VNP_RETURNURL</td><td>" + VNPayConfig.VNP_RETURNURL + "</td><td>" + returnUrlStatus + "</td></tr>");
-        
+        out.println("<tr><td>VNP_RETURNURL</td><td>" + VNPayConfig.VNP_RETURNURL + "</td><td class='warning'>⚠️ Check Approval</td></tr>");
         out.println("<tr><td>VNP_VERSION</td><td>" + VNPayConfig.VNP_VERSION + "</td><td class='info'>✓ Latest</td></tr>");
         
-        // Environment detection
-        String vercelUrl = System.getenv("VERCEL_URL");
-        String customDomain = System.getenv("CUSTOM_DOMAIN");
-        String ngrokUrl = System.getProperty("ngrok.url");
-        
-        out.println("<tr><td>Environment</td><td>");
-        if (vercelUrl != null && !vercelUrl.isEmpty()) {
-            out.println("Vercel: " + vercelUrl);
-        } else if (customDomain != null && !customDomain.isEmpty()) {
-            out.println("Custom Domain: " + customDomain);
-        } else if (ngrokUrl != null && !ngrokUrl.isEmpty()) {
-            out.println("Ngrok Tunnel: " + ngrokUrl);
-        } else {
-            out.println("Local Development");
-        }
-        out.println("</td><td class='info'>✓ Detected</td></tr>");
+        // Display IP address information
+        String currentIp = VNPayConfig.getIpAddress(request);
+        String rawIp = request.getRemoteAddr();
+        out.println("<tr><td>Current IP (Processed)</td><td>" + currentIp + "</td><td class='info'>✓ VNPay Ready</td></tr>");
+        out.println("<tr><td>Raw IP Address</td><td>" + rawIp + "</td><td class='warning'>" + 
+                   (rawIp.equals(currentIp) ? "✓ No conversion needed" : "⚠️ IPv6 converted") + "</td></tr>");
         
         out.println("</table>");
         
