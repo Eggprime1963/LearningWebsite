@@ -14,26 +14,26 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
- * Enhanced AI Service supporting both Ollama (local) and Gemini API (cloud)
- * Automatically falls back to Gemini if Ollama is unavailable
+ * Enhanced AI Service supporting both Gemini API (cloud) and Ollama (local)
+ * Prioritizes Gemini API, falls back to Ollama if needed
  */
 public class EnhancedAIService {
     private static final Logger logger = Logger.getLogger(EnhancedAIService.class.getName());
     
-    // Ollama configuration (local)
-    private static final String OLLAMA_BASE_URL = getOllamaUrl();
-    private static final String OLLAMA_MODEL = "llama3.2:3b";
-    
-    // Gemini API configuration (cloud)
+    // Gemini API configuration (primary)
     private static final String GEMINI_API_KEY = getGeminiApiKey();
     private static final String GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+    
+    // Ollama configuration (fallback)
+    private static final String OLLAMA_BASE_URL = getOllamaUrl();
+    private static final String OLLAMA_MODEL = "llama3.2:3b";
     
     // Timeouts
     private static final int CONNECT_TIMEOUT = 10000; // 10 seconds
     private static final int READ_TIMEOUT = 30000; // 30 seconds
     
     /**
-     * Get AI response with automatic fallback from Ollama to Gemini
+     * Get AI response with automatic fallback from Gemini to Ollama
      */
     public static String getAIResponse(String prompt) {
         return getAIResponse(prompt, "general");
@@ -43,26 +43,29 @@ public class EnhancedAIService {
      * Get AI response with context and automatic fallback
      */
     public static String getAIResponse(String prompt, String context) {
-        // Try Ollama first (if available)
+        // Try Gemini first (primary service)
+        if (isGeminiAvailable()) {
+            try {
+                String response = callGeminiAPI(prompt, context);
+                logger.info("Using Gemini API for AI response");
+                return response;
+            } catch (Exception e) {
+                logger.log(Level.WARNING, "Gemini failed, falling back to Ollama: {0}", e.getMessage());
+            }
+        }
+        
+        // Fallback to Ollama
         if (isOllamaAvailable()) {
             try {
                 String response = callOllamaAPI(prompt, context);
                 logger.info("Using Ollama for AI response");
                 return response;
             } catch (Exception e) {
-                logger.log(Level.WARNING, "Ollama failed, falling back to Gemini: {0}", e.getMessage());
+                logger.log(Level.SEVERE, "Both Gemini and Ollama failed: {0}", e.getMessage());
             }
         }
         
-        // Fallback to Gemini API
-        try {
-            String response = callGeminiAPI(prompt, context);
-            logger.info("Using Gemini API for AI response");
-            return response;
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Both Ollama and Gemini failed: {0}", e.getMessage());
-            return "I'm currently unable to process your request. Please try again later.";
-        }
+        return "I'm currently unable to process your request. Please try again later.";
     }
     
     /**
@@ -262,6 +265,10 @@ public class EnhancedAIService {
         String key = System.getenv("GEMINI_API_KEY");
         if (key == null || key.isEmpty()) {
             key = System.getProperty("gemini.api.key");
+        }
+        // Fallback to hardcoded key if environment variable not set
+        if (key == null || key.isEmpty()) {
+            key = "AIzaSyA8_WlPLW-vnYwFCJ7lXCOgbn5k1c0iePI";
         }
         return key;
     }

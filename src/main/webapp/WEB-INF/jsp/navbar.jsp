@@ -46,6 +46,9 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="${pageContext.request.contextPath}/studentList">Student List</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="${pageContext.request.contextPath}/vnpay-demo">VNPay Demo</a>
+                            </li>
                         <% } else if("student".equals(role)) { %>
                              <li class="nav-item">
                             <a class="nav-link active" href="${pageContext.request.contextPath}/home">Home</a>
@@ -59,6 +62,9 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="#">Practice</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="${pageContext.request.contextPath}/vnpay-demo">VNPay Demo</a>
+                            </li>
                         <% } else if (username != null) { %>
                             <!-- For logged in users without specific roles -->
                             <li class="nav-item">
@@ -67,6 +73,9 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="${pageContext.request.contextPath}/browse">Browse Courses</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="${pageContext.request.contextPath}/vnpay-demo">VNPay Demo</a>
+                            </li>
                         <% } else { %>
                             <!-- For non-logged in users -->
                             <li class="nav-item">
@@ -74,6 +83,9 @@
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="${pageContext.request.contextPath}/browse">Browse Courses</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="${pageContext.request.contextPath}/vnpay-demo">VNPay Demo</a>
                             </li>
                         <% } %>
                     </ul>

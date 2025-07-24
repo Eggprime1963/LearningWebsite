@@ -11,8 +11,7 @@ Set these in your Vercel dashboard:
 
 ```bash
 DATABASE_URL=mysql://username:password@host:port/database?sslaccept=strict&serverTimezone=UTC
-OLLAMA_BASE_URL=https://your-ollama-instance.com (optional)
-GEMINI_API_KEY=your_gemini_api_key
+GEMINI_API_KEY=AIzaSyA8_WlPLW-vnYwFCJ7lXCOgbn5k1c0iePI
 CUSTOM_DOMAIN=learn.nguyenstudy0504.tech
 ```
 

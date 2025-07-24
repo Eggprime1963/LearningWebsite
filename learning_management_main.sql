@@ -19,6 +19,8 @@
 -- Table structure for table `assignments`
 --
 
+CREATE DATABASE IF NOT EXISTS learning_management DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+
 USE learning_management;
 
 SET FOREIGN_KEY_CHECKS=0;

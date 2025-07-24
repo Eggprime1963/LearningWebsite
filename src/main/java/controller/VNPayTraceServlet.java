@@ -54,11 +54,11 @@ public class VNPayTraceServlet extends HttpServlet {
         out.println("<h2>📋 Current VNPay Configuration</h2>");
         out.println("<table>");
         out.println("<tr><th>Parameter</th><th>Value</th><th>Status</th></tr>");
-        out.println("<tr><td>VNP_TMNCODE</td><td>" + VNPayConfig.VNP_TMNCODE + "</td><td class='info'>✓ Configured</td></tr>");
-        out.println("<tr><td>VNP_URL</td><td>" + VNPayConfig.VNP_URL + "</td><td class='info'>✓ Sandbox</td></tr>");
-        out.println("<tr><td>VNP_RETURNURL</td><td>" + VNPayConfig.VNP_RETURNURL + "</td><td class='warning'>⚠️ Check Approval</td></tr>");
-        out.println("<tr><td>VNP_VERSION</td><td>" + VNPayConfig.VNP_VERSION + "</td><td class='info'>✓ Latest</td></tr>");
-        
+        out.println("<tr><td>VNP_TMNCODE</td><td>" + VNPayConfig.vnp_TmnCode + "</td><td class='info'>✓ Configured</td></tr>");
+        out.println("<tr><td>VNP_URL</td><td>" + VNPayConfig.vnp_PayUrl + "</td><td class='info'>✓ Sandbox</td></tr>");
+        out.println("<tr><td>VNP_RETURNURL</td><td>" + VNPayConfig.vnp_ReturnUrl + "</td><td class='warning'>⚠️ Check Approval</td></tr>");
+        out.println("<tr><td>VNP_VERSION</td><td>" + "2.1.0" + "</td><td class='info'>✓ Latest</td></tr>");
+
         // Display IP address information
         String currentIp = VNPayConfig.getIpAddress(request);
         String rawIp = request.getRemoteAddr();

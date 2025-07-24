@@ -92,7 +92,8 @@ public class PaymentServlet extends HttpServlet {
             Course course = courseOpt.get();
 
             // Get price from VNPayConfig
-            Integer price = VNPayConfig.COURSE_PRICES.get(courseId);
+            // Convert BigDecimal price to int
+            Integer price = (course.getPrice() != null) ? course.getPrice().intValue() : null;
             if (price == null || price == 0) {
                 // Course not configured for payment or free
                 response.sendRedirect("/course");
@@ -145,7 +146,7 @@ public class PaymentServlet extends HttpServlet {
                 return;
             }
 
-            Integer amountInt = VNPayConfig.COURSE_PRICES.get(courseId);
+            Integer amountInt = (course.getPrice() != null) ? course.getPrice().intValue() : null;
             if (amountInt == null || amountInt == 0) {
                 response.sendRedirect("/course?message=invalid_course");
                 return;
@@ -174,14 +175,14 @@ public class PaymentServlet extends HttpServlet {
             Map<String, String> vnp_Params = new HashMap<>();
             vnp_Params.put("vnp_Version", vnp_Version);
             vnp_Params.put("vnp_Command", vnp_Command);
-            vnp_Params.put("vnp_TmnCode", VNPayConfig.VNP_TMNCODE);
+            vnp_Params.put("vnp_TmnCode", VNPayConfig.vnp_TmnCode);
             vnp_Params.put("vnp_Amount", vnp_Amount);
             vnp_Params.put("vnp_CurrCode", "VND");
             vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
             vnp_Params.put("vnp_OrderInfo", vnp_OrderInfo);
             vnp_Params.put("vnp_OrderType", vnp_OrderType);
             vnp_Params.put("vnp_Locale", vnp_Locale);
-            vnp_Params.put("vnp_ReturnUrl", VNPayConfig.VNP_RETURNURL);
+            vnp_Params.put("vnp_ReturnUrl", VNPayConfig.vnp_ReturnUrl);
             vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
             vnp_Params.put("vnp_CreateDate", vnp_CreateDate);
             vnp_Params.put("vnp_ExpireDate", vnp_ExpireDate);
@@ -246,9 +247,9 @@ public class PaymentServlet extends HttpServlet {
             }
             
             String queryUrl = query.toString();
-            String vnp_SecureHash = VNPayConfig.hmacSHA512(VNPayConfig.VNP_HASHSECRET, hashData.toString());
+            String vnp_SecureHash = VNPayConfig.hmacSHA512(VNPayConfig.secretKey, hashData.toString());
             queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
-            String paymentUrl = VNPayConfig.VNP_URL + "?" + queryUrl;
+            String paymentUrl = VNPayConfig.vnp_PayUrl + "?" + queryUrl;
 
             // Comprehensive debug logging for signature troubleshooting
             logger.log(Level.INFO, "=== VNPay Payment Debug Info ===");
@@ -443,6 +444,6 @@ public class PaymentServlet extends HttpServlet {
         
         String signature = VNPayConfig.hashAllFields(testParams);
         System.out.println("Test VNPay Signature: " + signature);
-        System.out.println("Using Secret Key: " + VNPayConfig.VNP_HASHSECRET);
+        System.out.println("Using Secret Key: " + VNPayConfig.secretKey);
     }
 }
