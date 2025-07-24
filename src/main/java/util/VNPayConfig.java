@@ -91,39 +91,16 @@ public class VNPayConfig {
     }
 
     public static String getIpAddress(HttpServletRequest request) {
-        String ipAddress;
+        String ipAdress;
         try {
-            // Check for IP from proxy or load balancer
-            ipAddress = request.getHeader("X-FORWARDED-FOR");
-            if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
-                ipAddress = request.getHeader("X-Real-IP");
+            ipAdress = request.getHeader("X-FORWARDED-FOR");
+            if (ipAdress == null) {
+                ipAdress = request.getRemoteAddr();
             }
-            if (ipAddress == null || ipAddress.isEmpty() || "unknown".equalsIgnoreCase(ipAddress)) {
-                ipAddress = request.getRemoteAddr();
-            }
-            
-            // Handle IPv6 localhost
-            if ("0:0:0:0:0:0:0:1".equals(ipAddress) || "::1".equals(ipAddress)) {
-                ipAddress = "127.0.0.1";
-            }
-            
-            // Take first IP if multiple IPs (comma-separated)
-            if (ipAddress != null && ipAddress.contains(",")) {
-                ipAddress = ipAddress.split(",")[0].trim();
-            }
-            
-            // Validate IPv4 format (basic validation)
-            if (ipAddress != null && !ipAddress.matches("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$")) {
-                logger.warning("Non-IPv4 address detected: " + ipAddress + ", using fallback");
-                ipAddress = "127.0.0.1"; // Fallback to localhost
-            }
-            
         } catch (Exception e) {
-            logger.severe("Error getting IP address: " + e.getMessage());
-            ipAddress = "127.0.0.1"; // Safe fallback
+            ipAdress = "Invalid IP:" + e.getMessage();
         }
-        
-        return ipAddress;
+        return ipAdress;
     }
 
     // Method for PaymentServlet with custom transaction reference
@@ -274,20 +251,89 @@ public class VNPayConfig {
     
     /**
      * Get the return URL based on the environment
-     * Uses environment variable or defaults to localhost for development
-     * For production, uses VNPay approved test URL to avoid approval issues
+     * Handles localhost, ngrok, Vercel, and production domains
+     * Returns the correct URL for PaymentServlet's /payment/return endpoint
      */
     private static String getReturnUrl() {
+        // Check for Vercel deployment environment
+        String vercelUrl = System.getenv("VERCEL_URL");
+        if (vercelUrl != null && !vercelUrl.isEmpty()) {
+            return "https://" + vercelUrl + "/payment/return";
+        }
+        
+        // Check for custom domain (production)
         String customDomain = System.getenv("CUSTOM_DOMAIN");
         if (customDomain != null && !customDomain.isEmpty()) {
-            // Production environment - use localhost tunnel or VNPay approved URL
-            // Option 1: Use ngrok or similar tunnel service
-            // return "https://your-ngrok-url.ngrok.io/payment/return";
+            logger.info("Production environment detected with domain: " + customDomain);
             
-            // Option 2: Use VNPay's approved test return URL (temporary solution)
-            logger.info("Production environment detected. Using approved return URL for testing.");
-            return "http://localhost:8080/payment/return"; // VNPay approved for testing
+            // For production, check if domain is approved by VNPay
+            // If not approved yet, use localhost for testing
+            if ("learn.nguyenstudy0504.tech".equals(customDomain)) {
+                // Your production domain - use when approved by VNPay
+                // return "https://learn.nguyenstudy0504.tech/payment/return";
+                
+                // Temporary: Use localhost until domain is approved
+                logger.info("Using localhost for testing until domain approval is complete.");
+                return "http://localhost:8080/payment/return";
+            }
+            
+            return "https://" + customDomain + "/payment/return";
         }
+        
+        // Check for ngrok tunnel (useful for testing with external access)
+        String ngrokUrl = System.getProperty("ngrok.url");
+        if (ngrokUrl != null && !ngrokUrl.isEmpty()) {
+            logger.info("Using ngrok tunnel URL: " + ngrokUrl);
+            return ngrokUrl + "/payment/return";
+        }
+        
+        // Default to localhost for development
+        logger.info("Using localhost for local development");
         return "http://localhost:8080/payment/return";
+    }
+    
+    /**
+     * Validate that the return URL matches the PaymentServlet mapping
+     * PaymentServlet is mapped to {"/payment", "/payment/return"}
+     */
+    public static boolean validateReturnUrl() {
+        String returnUrl = VNP_RETURNURL;
+        boolean isValid = returnUrl.endsWith("/payment/return");
+        
+        if (!isValid) {
+            logger.severe("INVALID RETURN URL: " + returnUrl + " - Must end with '/payment/return' to match PaymentServlet mapping");
+        } else {
+            logger.info("Return URL validated successfully: " + returnUrl);
+        }
+        
+        return isValid;
+    }
+    
+    /**
+     * Get current environment info for debugging
+     */
+    public static String getEnvironmentInfo() {
+        StringBuilder info = new StringBuilder();
+        info.append("=== VNPay Environment Info ===\n");
+        info.append("Return URL: ").append(VNP_RETURNURL).append("\n");
+        info.append("TMN Code: ").append(VNP_TMNCODE).append("\n");
+        info.append("VNPay URL: ").append(VNP_URL).append("\n");
+        info.append("VERCEL_URL: ").append(System.getenv("VERCEL_URL")).append("\n");
+        info.append("CUSTOM_DOMAIN: ").append(System.getenv("CUSTOM_DOMAIN")).append("\n");
+        info.append("ngrok.url (system property): ").append(System.getProperty("ngrok.url")).append("\n");
+        info.append("Return URL Valid: ").append(validateReturnUrl()).append("\n");
+        info.append("==============================");
+        return info.toString();
+    }
+    
+    /**
+     * Set custom return URL for testing (useful for ngrok)
+     * Call this before creating payment URLs
+     */
+    public static void setNgrokUrl(String ngrokUrl) {
+        if (ngrokUrl != null && !ngrokUrl.isEmpty()) {
+            System.setProperty("ngrok.url", ngrokUrl);
+            logger.info("Ngrok URL set for testing: " + ngrokUrl);
+        }
     }
 }

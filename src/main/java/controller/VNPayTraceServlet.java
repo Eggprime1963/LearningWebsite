@@ -1,18 +1,18 @@
 package controller;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import util.VNPayConfig;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import util.VNPayConfig;
 
 /**
  * VNPay Response Tracing Servlet
@@ -50,14 +50,38 @@ public class VNPayTraceServlet extends HttpServlet {
         
         out.println("<h1>🔍 VNPay Response Tracer</h1>");
         
-        // Display current VNPay configuration
+        // Display current VNPay configuration with enhanced return URL info
         out.println("<h2>📋 Current VNPay Configuration</h2>");
         out.println("<table>");
         out.println("<tr><th>Parameter</th><th>Value</th><th>Status</th></tr>");
         out.println("<tr><td>VNP_TMNCODE</td><td>" + VNPayConfig.VNP_TMNCODE + "</td><td class='info'>✓ Configured</td></tr>");
         out.println("<tr><td>VNP_URL</td><td>" + VNPayConfig.VNP_URL + "</td><td class='info'>✓ Sandbox</td></tr>");
-        out.println("<tr><td>VNP_RETURNURL</td><td>" + VNPayConfig.VNP_RETURNURL + "</td><td class='warning'>⚠️ Check Approval</td></tr>");
+        
+        // Enhanced return URL validation
+        String returnUrlStatus = VNPayConfig.validateReturnUrl() ? 
+            "<span class='success'>✓ Valid Format</span>" : 
+            "<span class='error'>❌ Invalid Format</span>";
+        out.println("<tr><td>VNP_RETURNURL</td><td>" + VNPayConfig.VNP_RETURNURL + "</td><td>" + returnUrlStatus + "</td></tr>");
+        
         out.println("<tr><td>VNP_VERSION</td><td>" + VNPayConfig.VNP_VERSION + "</td><td class='info'>✓ Latest</td></tr>");
+        
+        // Environment detection
+        String vercelUrl = System.getenv("VERCEL_URL");
+        String customDomain = System.getenv("CUSTOM_DOMAIN");
+        String ngrokUrl = System.getProperty("ngrok.url");
+        
+        out.println("<tr><td>Environment</td><td>");
+        if (vercelUrl != null && !vercelUrl.isEmpty()) {
+            out.println("Vercel: " + vercelUrl);
+        } else if (customDomain != null && !customDomain.isEmpty()) {
+            out.println("Custom Domain: " + customDomain);
+        } else if (ngrokUrl != null && !ngrokUrl.isEmpty()) {
+            out.println("Ngrok Tunnel: " + ngrokUrl);
+        } else {
+            out.println("Local Development");
+        }
+        out.println("</td><td class='info'>✓ Detected</td></tr>");
+        
         out.println("</table>");
         
         // Check if this is a VNPay return call
