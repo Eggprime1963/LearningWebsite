@@ -5,8 +5,6 @@ builder = "nixpacks"
 startCommand = "java -Dserver.port=$PORT -jar target/learning-platform-1.0.0.jar"
 healthcheckPath = "/"
 healthcheckTimeout = 100
-restartPolicyType = "on-failure"
-restartPolicyMaxRetries = 10
 
 [env]
 NIXPACKS_JDK_VERSION = "17"

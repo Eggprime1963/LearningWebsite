@@ -1,6 +1,3 @@
-[build]
-builder = "nixpacks"
-
 [phases.setup]
 nixPkgs = ["openjdk17", "maven"]
 
