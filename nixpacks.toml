@@ -1,0 +1,11 @@
+[build]
+builder = "nixpacks"
+
+[phases.setup]
+nixPkgs = ["openjdk17", "maven"]
+
+[phases.build]
+cmds = ["mvn clean package -DskipTests"]
+
+[start]
+cmd = "java -Dserver.port=$PORT -jar target/learning-platform-1.0.0.jar"
