@@ -4,13 +4,13 @@
 
 **Error**: `Environment Variable "DATABASE_URL" references Secret "database_url", which does not exist.`
 
-**Solution**: Removed undefined secret references from `vercel.json` and updated configuration to use standard environment variables.
+**Solution**: Removed undefined secret references from `railway.toml` and updated configuration to use standard environment variables.
 
 ## 📋 **How to Set Environment Variables Correctly**
 
-### Method 1: Vercel Dashboard (Recommended)
+### Method 1: Railway Dashboard (Recommended)
 
-1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
+1. Go to [Railway Dashboard](https://railway.app/dashboard)
 2. Select your project: **learning-platform**
 3. Navigate to **Settings** → **Environment Variables**
 4. Add these variables:
@@ -74,13 +74,13 @@ mysql://user:pass@mysql.example.com:3306/learning_db
 
 After setting environment variables:
 
-1. **Redeploy**: `vercel --prod`
-2. **Check variables**: `vercel env ls`
+1. **Redeploy**: `railway up`
+2. **Check variables**: `railway env ls`
 3. **Test deployment**: Visit your site to verify database connectivity
 
 ## 🚀 **Your Configuration is Now Ready**
 
-The `vercel.json` file has been cleaned up and no longer references non-existent secrets. Environment variables should be set directly in the Vercel dashboard.
+The `railway.toml` file has been cleaned up and no longer references non-existent secrets. Environment variables should be set directly in the Railway dashboard.
 
 ---
 **Fixed**: July 23, 2025  

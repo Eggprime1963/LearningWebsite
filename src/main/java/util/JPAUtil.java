@@ -10,7 +10,7 @@ import java.util.Map;
 
 /**
  * JPA Utility class for managing EntityManager lifecycle
- * Supports both local development and production (Vercel) deployment
+ * Supports both local development and production (Railway) deployment
  */
 public class JPAUtil {
     private static EntityManagerFactory entityManagerFactory;

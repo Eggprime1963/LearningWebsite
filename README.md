@@ -521,7 +521,7 @@ flowchart TD
 - **JUnit** - Unit testing framework
 - **Log4j** - Logging and monitoring
 - **Docker** - Containerization and deployment (optional)
-- **Vercel** - Modern cloud platform deployment with global CDN
+- **Railway** - Modern cloud platform deployment with automatic scaling
 
 ## 📁 Project Structure
 
@@ -795,30 +795,29 @@ cp target/learning-platform-1.0.0.war $TOMCAT_HOME/webapps/
 $TOMCAT_HOME/bin/startup.sh
 ```
 
-### Vercel Deployment (Custom Domain: learn.nguyenstudy0504.tech)
+### Railway Deployment (Custom Domain: learn.nguyenstudy0504.tech)
 
-The application is configured for Vercel deployment with custom domain support:
+The application is configured for Railway deployment with custom domain support:
 
 ```bash
-# 1. Install Vercel CLI
-npm install -g vercel
+# 1. Install Railway CLI
+npm install -g @railway/cli
 
-# 2. Login to Vercel
-vercel login
+# 2. Login to Railway
+railway login
 
-# 3. Deploy to production
-vercel --prod
+# 3. Deploy to Railway
+railway up
 
-# 4. Add custom domain
-vercel domains add learn.nguyenstudy0504.tech
-vercel domains assign learn.nguyenstudy0504.tech
+# 4. Add custom domain (in Railway dashboard)
+# Go to Settings > Domains > Add Domain
+# Add: learn.nguyenstudy0504.tech
 ```
 
 **DNS Configuration for Custom Domain:**
-- Add CNAME record: `learn` → `cname.vercel-dns.com`
-- Or use A records: `learn` → `76.76.19.61` and `76.223.126.88`
+- Add CNAME record: `learn` → `your-project.railway.app`
 
-**Environment Variables (set in Vercel dashboard):**
+**Environment Variables (set in Railway dashboard):**
 - `DATABASE_URL`: Production MySQL database connection
 - `OLLAMA_BASE_URL`: Ollama service URL (optional)
 - `GEMINI_API_KEY`: Google Gemini API key for AI features
@@ -830,7 +829,7 @@ vercel domains assign learn.nguyenstudy0504.tech
 - ✅ Custom domain with security headers
 - ✅ AI service with Ollama/Gemini fallback
 
-📋 **Complete Setup Guide:** See `COMPLETE_VERCEL_SETUP.md` for detailed instructions.
+📋 **Complete Setup Guide:** See `RAILWAY_DEPLOYMENT.md` for detailed instructions.
 
 ### Docker Deployment
 ```dockerfile
@@ -990,8 +989,8 @@ copies or substantial portions of the Software.
 
 ## 🎉 Recent Updates & Changelog
 
-### Version 2.3 - Vercel Deployment Ready (Current)
-- ✅ **Vercel Configuration**: Complete deployment setup with custom domain support
+### Version 2.3 - Railway Deployment Ready (Current)
+- ✅ **Railway Configuration**: Complete deployment setup with custom domain support
 - ✅ **Modern Cloud Platform**: Global CDN and serverless architecture
 - ✅ **Custom Domain**: Configured for learn.nguyenstudy0504.tech
 - ✅ **Enhanced AI Service**: Dual AI service with Ollama/Gemini API fallback

@@ -178,7 +178,7 @@
                 </executions>
             </plugin>
             
-            <!-- Maven Dependency Plugin for embedded Tomcat (Vercel deployment) -->
+            <!-- Maven Dependency Plugin for embedded Tomcat (Railway deployment) -->
             <!--
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

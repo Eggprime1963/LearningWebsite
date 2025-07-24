@@ -34,11 +34,11 @@ The repository had a leftover git submodule reference for `src/main/webapp/css` 
 - All CSS files are now properly tracked as regular files
 
 ## 🚀 Result
-- **Vercel build warning eliminated**
+- **Railway build warning eliminated**
 - **Repository is clean and consistent**
 - **CSS files are properly versioned**
 - **No impact on functionality**
 
 ---
 **Fixed on**: July 23, 2025  
-**Status**: ✅ Ready for Vercel deployment
+**Status**: ✅ Ready for Railway deployment

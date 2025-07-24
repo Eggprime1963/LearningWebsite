@@ -128,7 +128,7 @@ logger.info("Generated signature: " + signature);
 5. **Return handling**: Debug with `/vnpay-trace`
 
 ### Production Testing (After Approval):
-1. **Deploy to Vercel**: With approved domain
+1. **Deploy to Railway**: With approved domain
 2. **Update VNPayConfig**: Use production return URL
 3. **Test end-to-end**: Full payment flow
 4. **Monitor logs**: Check for any issues

@@ -70,7 +70,7 @@ Your `persistence.xml` is configured for local development:
 <property name="jakarta.persistence.jdbc.password" value="DBProject@"/>
 ```
 
-## 🚀 **Production Setup (Vercel Deployment)**
+## 🚀 **Production Setup (Railway Deployment)**
 
 ### 1. Choose a MySQL Provider
 
@@ -105,9 +105,9 @@ Your `persistence.xml` is configured for local development:
 - Affordable managed MySQL
 - Good performance
 
-### 2. Set Environment Variables in Vercel
+### 2. Set Environment Variables in Railway
 
-Go to your Vercel Dashboard → Project → Settings → Environment Variables:
+Go to your Railway Dashboard → Project → Settings → Environment Variables:
 
 ```bash
 # Required for all environments

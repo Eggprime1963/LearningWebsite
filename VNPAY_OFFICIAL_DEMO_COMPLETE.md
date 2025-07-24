@@ -64,7 +64,7 @@ Successfully implemented the EXACT VNPay official demo structure in the learning
 #### VNPayConfig.java Updates
 - **IPv6 Support**: Automatic conversion of `0:0:0:0:0:0:0:1` to `127.0.0.1`
 - **Production Credentials**: CGW7KJK7/VGTLQQIUPSSO4ERSSAMGVFS5RRSGBEHT
-- **Multi-environment Support**: Works with localhost, Vercel, custom domains, ngrok
+- **Multi-environment Support**: Works with localhost, Railway, custom domains, ngrok
 - **Enhanced Debugging**: IP address logging for troubleshooting
 
 #### Config.java (vnpay_jsp) Updates
