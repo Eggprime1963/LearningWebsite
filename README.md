@@ -105,7 +105,7 @@ graph TB
     end
     
     subgraph "External Services"
-        R[Ollama AI API]
+        R[Gemini AI API]
         S[File Storage]
     end
     
@@ -274,7 +274,7 @@ flowchart TD
     F --> H
     G --> H
     
-    H -->|Yes| I[Ollama API Call]
+    H -->|Yes| I[Gemini API Call]
     H -->|No| J[Intelligent Fallback System]
     
     I --> K[Enhanced AI Response]
@@ -309,7 +309,7 @@ flowchart TD
 ### AI Features Implementation
 
 #### 1. **Smart Chatbot System**
-- **Primary AI**: Ollama API integration (llama3, codellama models)
+- **Primary AI**: Gemini API integration (2.5 Pro model)
 - **Fallback System**: Intelligent keyword-based responses
 - **Context Awareness**: User role and course-specific assistance
 - **Response Types**: Educational, debugging, recommendations, general help
@@ -333,7 +333,7 @@ flowchart TD
 - **Apache Tomcat 10.x**
 - **MySQL 8.0+**
 - **Maven 3.8+**
-- **Ollama** (optional, for enhanced AI features)
+- **Gemini API** (key, for enhanced AI features)
 
 ### Step 1: Database Setup
 ```bash
@@ -509,19 +509,13 @@ flowchart TD
 - **HTML5** - Semantic markup and modern web standards
 
 ### AI & External Integration
-- **Ollama API** - Local AI model hosting and inference
-- **llama3** - Large language model for general conversation
-- **codellama** - Specialized model for programming assistance
+- **Gemini 2.5 Pro** - AI model hosting and inference
 - **JSON** - API communication and data exchange format
 - **RESTful APIs** - Service integration and external communication
 
 ### Development & Deployment
 - **Git** - Version control and collaboration
 - **Maven** - Build lifecycle and dependency management
-- **JUnit** - Unit testing framework
-- **Log4j** - Logging and monitoring
-- **Docker** - Containerization and deployment (optional)
-- **Vercel** - Modern cloud platform deployment with global CDN
 
 ## 📁 Project Structure
 
