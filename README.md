@@ -106,11 +106,10 @@ graph TB
     
     subgraph "External Services"
         R[Gemini AI API]
-        S[File Storage]
     end
     
     subgraph "Database"
-        T[MySQL Server]
+        S[MySQL Server]
     end
     
     A --> C
