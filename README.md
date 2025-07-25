@@ -109,7 +109,7 @@ graph TB
     end
     
     subgraph "Database"
-        S[MySQL Server]
+        T[MySQL Server]
     end
     
     A --> C
