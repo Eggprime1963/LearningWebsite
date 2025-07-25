@@ -269,7 +269,7 @@ flowchart TD
     C -->|Programming| F[Programming Helper]
     C -->|General| G[General Assistant]
     
-    D --> H{Ollama API Available?}
+    D --> H{Gemini API Available?}
     E --> H
     F --> H
     G --> H
@@ -298,8 +298,8 @@ flowchart TD
     end
     
     subgraph "AI Models"
-        S[llama3 - General Chat]
-        T[codellama - Programming]
+        S[General Chat]
+        T[Programming]
         
         I --> S
         I --> T
